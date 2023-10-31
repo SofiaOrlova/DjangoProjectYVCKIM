@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.tokens import default_token_generator as token_generator
 from django.contrib.auth.views import LoginView
 from users.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
 from users.utils import send_email_for_verify
 
 User = get_user_model()
@@ -22,7 +23,18 @@ class EmailVerify(View):
             user.email_verify = True
             user.save()
             login(request, user)
-            return redirect('home')
+
+            # Проверьте роль пользователя и перенаправьте на соответствующую страницу личного кабинета
+            if user.groups.filter(name='Преподаватель').exists():
+                return redirect('teacher_dashboard')
+            elif user.groups.filter(name='Ученик').exists():
+                return redirect('student_dashboard')
+           # else user.groups.filter(name='Менеджер').exists():
+            if user.groups.filter(name='Менеджер').exists():
+                return redirect('manager_dashboard')
+            #else:
+                #return redirect('invalid_role')  # Обработка случая, если у пользователя нет роли
+            #return redirect('home')
         return redirect('invalid_verify')
 
     @staticmethod
@@ -60,3 +72,17 @@ class Register(View):
             'form': form 
         }
         return render(request, self.template_name, context)
+    
+
+def user_profile(request):
+    if request.user.is_authenticated:
+        # Проверьте принадлежность пользователя к группам и перенаправьте на соответствующую страницу
+        if request.user.groups.filter(name='Преподаватель').exists():
+            return redirect('teacher_dashboard')
+        elif request.user.groups.filter(name='Ученик').exists():
+            return redirect('student_dashboard')
+        elif request.user.groups.filter(name='Менеджер').exists():
+            return redirect('manager_dashboard')
+    else:
+        return redirect('login')  # Пользователь не вошел в систему
+    
