@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, get_user_model
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from django.utils.http import urlsafe_base64_decode
@@ -8,6 +9,8 @@ from django.contrib.auth.views import LoginView
 from users.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from users.utils import send_email_for_verify
+
+from .models import Instructor
 
 User = get_user_model()
 
@@ -80,9 +83,23 @@ def user_profile(request):
         if request.user.groups.filter(name='Преподаватель').exists():
             return redirect('teacher_dashboard')
         elif request.user.groups.filter(name='Ученик').exists():
-            return redirect('student_dashboard')
+            return redirect('student_dashboard/')
         elif request.user.groups.filter(name='Менеджер').exists():
             return redirect('manager_dashboard')
     else:
         return redirect('login')  # Пользователь не вошел в систему
     
+
+def student_dashboard(request):
+    items = Instructor.objects.all()
+    context = {
+        'items':items
+    }
+    return render(request, "student_dashboard.html", context)
+
+def indexInstructor(request, idInstructor):
+    item = Instructor.objects.get(id=idInstructor)
+    context = {
+        'item':item
+    }
+    return render(request, "student_pickDataTime.html", context)

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 
 from users.forms import UserCreationForm
+from .models import Instructor
 
 User = get_user_model()
 
@@ -16,3 +17,5 @@ class UserAdmin(UserAdmin):
     )
 
     add_form = UserCreationForm
+
+admin.site.register(Instructor)

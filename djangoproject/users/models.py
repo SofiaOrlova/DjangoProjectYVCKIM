@@ -13,3 +13,13 @@ class User(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
+
+
+class Instructor(models.Model):
+    second_name = models.CharField(max_length=100)
+    name=models.CharField(max_length=100)
+    surname = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.second_name
+

@@ -10,9 +10,48 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600&family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
-<body class="container">
-    {% if user.is_authenticated %}
+<body>
+    <header>
+        <div class="container">
+            <div class="header-els">
+                <div class="header-icon">
+                    <img src="../static/img/logo.svg" alt="logo" class="logo">
+                </div>
+                <a href="tel:+7-961-150-00-60" class="item-menu menu-bg tel-menu">+7-961-150-00-60</a>
+                <a href="mailto:allaorl@mail.ru" class="item-menu menu-bg mail-menu">allaorl@mail.ru</a>
+                <p class="text-menu">Пн-Пт: 9-19 <br> Сб: 10-13 <br>
+                    г.Кимовск ул.Бессолова д.59 оф.3 </p>
+            </div>
+        </div>
+    </header>
+    <main>
+        <nav class="container">
+            <ul class="nav">
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link current-link" href="#">Запись на занятие</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link" href="timetablestudent.html">Расписание</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item nav-item-logout">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="nav-link img-exit">Выйти</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-login" >Войти </a>|<a href="{% url 'register' %}" class="nav-login" > Зарегистрироваться</a>
+                    {% endif %}
+                    
+                </li>
+            </ul>
+        </nav>
+
+    </main>
+    <!-- {% if user.is_authenticated %}
         <a href="{% url 'logout' %}">Выйти</a>
     {% else %}
         <a href="{% url 'login' %}">Войти</a> | <a href="{% url 'register' %}">Зарегистрироваться</a>
@@ -20,7 +59,7 @@
     <ul class="list-group">
         <li class="list-group-item">User: {{ user }} </li>
         <li class="list-group-item"> <a href="{% url 'home' %}"> Home </a> </li>
-    </ul>
+    </ul> -->
 
     {% block content %}
     {% endblock %}

@@ -1,7 +1,19 @@
 {% extends 'base.html' %}
 
 {% block content%}
-    <h1>Home page</h1>
+
+    {% if user.is_authenticated %}
+                
+    {% else %}
+        <div class="container no-auth">
+            <p>Для записи на занятие необходимо <a href="{% url 'login' %}" class="nav-login" >авторизоваться</a></p>
+            <p>
+                <span>Еще нет аккаунта? </span> Пройдите <a href="{% url 'register' %}" class="nav-login" >регистрацию</a> и заполните договор об оказании платных образовательных услуг у менеджера,
+                после чего Вам будет доступна онлайн запись на занятие.
+            </p>
+        </div>
+    {% endif %}
+    <!-- <h1>Home page</h1>
     <h2>home.html</h2>
     <hr>
 
@@ -9,5 +21,5 @@
         <a href="{% url 'logout' %}">Logout</a>
     {% else %}
         <a href="{% url 'login' %}">Login</a> | <a href="{% url 'register' %}">Register</a>
-    {% endif %}
+    {% endif %} -->
 {% endblock %}
