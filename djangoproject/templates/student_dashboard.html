@@ -1,17 +1,94 @@
 {% extends 'base.html' %}
 
 {% block content%}
-    <h1>Home page</h1>
-    <h2>Пользователь</h2>
-    <hr>
+    {% load static %}
+    <div class="container">
+        <h2 class="title-client">Выбор инструктора</h2>
 
-    <div>
+
+        <div class="instructor-cards">
+            <a class="instructor-card" href="/users/student_dashboard/{{items.0.id}}/">
+                <div class="photo">
+                    <img src="{% static 'img/icon-woman.png' %}" class="img-instr" alt="">
+                </div>
+                <div class="text-card">
+                    {{items.0.second_name}} {{items.0.name}} {{items.0.surname}}
+
+                    <div class="subtitle-card">
+                        Ближайшие доступные даты:
+                    </div>
+                    <div class="subtitle-card date-card">
+                        15, 18, 19, 20, 23...
+                    </div>
+                </div>
+            </a>
+    
+            <a class="instructor-card" href="/users/student_dashboard/{{items.1.id}}/">
+                <div class="photo">
+                    <img src="{% static 'img/icon-man.png' %}" class="img-instr" alt="">
+                </div>
+                <div class="text-card">
+                     {{items.1.second_name}} {{items.1.name}} {{items.1.surname}}
+
+                    <div class="subtitle-card">
+                        Ближайшие доступные даты:
+                    </div>
+                    <div class="subtitle-card date-card">
+                        15, 18, 19, 20, 23...
+                    </div>
+                </div>
+            </a>
+    
+    
+            <a class="instructor-card" href="/users/student_dashboard/{{items.2.id}}/">
+                <div class="photo">
+                    <img src="{% static 'img/icon-man.png' %}" class="img-instr" alt="">
+                </div>
+                <div class="text-card">
+                    {{items.2.second_name}} {{items.2.name}} {{items.2.surname}}
+
+                    <div class="subtitle-card">
+                        Ближайшие доступные даты:
+                    </div>
+                    <div class="subtitle-card date-card">
+                        15, 18, 19, 20, 23...
+                    </div>
+                </div>
+            </a>
+
+            <a class="instructor-card" href="/users/student_dashboard/{{items.3.id}}/">
+                <div class="photo">
+                    <img src="{% static 'img/icon-man.png' %}" class="img-instr" alt="">
+                </div>
+                <div class="text-card">
+                    {{items.3.second_name}} {{items.3.name}} {{items.3.surname}}
+
+                    <div class="subtitle-card">
+                        Ближайшие доступные даты:
+                    </div>
+                    <div class="subtitle-card date-card">
+                        15, 18, 19, 20, 23...
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- <h1>Home page</h1>
+    <h2>Пользователь</h2>
+    <hr> -->
+
+    <!-- <div>
         <h3>Выбор инструктора</h3>        
 
-        {% for item in items %}
-        <a href="/users/student_dashboard/{{item.id}}/">{{item.second_name}} {{item.name}} {{item.surname}}</a> <br>
-        {% endfor %}
-    </div>
+         {% for item in items %}
+            <a href="/users/student_dashboard/{{item.id}}/">{{item.second_name}} {{item.name}} {{item.surname}}</a> <br>             
+        {% endfor %}  -->
+
+        <!-- <a href="/users/student_dashboard/{{items.0.id}}/">{{items.0.second_name}} {{items.0.name}} {{items.0.surname}}</a> <br> 
+        <a href="/users/student_dashboard/{{items.1.id}}/">{{items.1.second_name}} {{items.1.name}} {{items.1.surname}}</a>
+        
+    </div>  -->
 
 
     <!-- {% if user.is_authenticated %}

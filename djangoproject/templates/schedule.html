@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content%}
+    {% load static %}
+    {% load humanize %} 
+    <div class="container">
+        <h2 class="title-client">Расписание</h2>
+
+        <div id='calendar'></div>
+    </div>
+
+
+    
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script>
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // var user_id = document.getElementById('user-id').getAttribute('data-user-id');
+        // Используем Django-переменную, встроенную в HTML
+        // var user_id = "{{ user_id }}";
+        // var appointments = JSON.parse('{{ appointments_json|escapejs }}');
+
+        // var user_id = "{{ user_id }}";
+        var user_id = parseInt("{{ user_id }}");
+        var appointments_json = '{{ appointments_json|escapejs }}';
+        var appointments;
+
+        try {
+            appointments = JSON.parse(appointments_json);
+
+        } catch (error) {
+            console.error('Ошибка при парсинге JSON:', error);
+            appointments = [];
+        }
+        console.log(appointments);
+        // var appointments = JSON.parse('{{ appointments_json|escapejs }}');
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridWeek',
+          locale: 'ru',
+          firstDay: '1',
+          buttonText: {
+            today:    'сегодня',
+          },
+          eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          },
+        //   events: appointments.map(function(appointment) {
+        //         var startTime = new Date(appointment.date + 'T' + appointment.time);
+        //         var endTime = new Date(startTime.getTime() + 90 * 60 * 1000); // Добавляем 90 минут (1.5 часа)
+
+        //         var formattedTime = formatTimeRange(startTime, endTime);
+                
+        //         return {
+        //             title: formattedTime + ' ' + appointment.instructor,
+        //             start: startTime,
+        //             end: endTime,
+        //         };
+        //     }),
+          events: appointments.map(function(appointment) {
+                var startTime = appointment.date + 'T' + appointment.time;
+                // var endTime = addMinutes(startTime, 90);
+                return {
+                    title: appointment.instructor,
+                    start: startTime,
+                    // end: endTime,
+                };
+            }),
+        });
+        calendar.render();
+
+        var eventTimeElements = document.querySelectorAll('.fc-event-time');
+        eventTimeElements.forEach(function(element) {
+            // Получить текстовое содержимое элемента
+            var originalTime = element.textContent.trim();
+
+            // Разбить время на часы и минуты
+            var [hours, minutes] = originalTime.split(':').map(Number);
+
+            // Добавить 90 минут
+            minutes += 90;
+
+            // Управление переносом часов и минут
+            if (minutes >= 60) {
+                hours += 1;
+                minutes -= 60;
+            }
+
+            // Форматирование и возврат времени
+            var newTime = padNumber(hours) + ':' + padNumber(minutes);
+
+            // Заменить оригинальное время новым временем с добавлением 90 минут
+            element.textContent = originalTime + '-' + newTime;
+        });
+      });
+
+      // Вспомогательная функция для добавления нуля к числам < 10
+        function padNumber(number) {
+            return number < 10 ? '0' + number : number;
+        }
+
+
+    </script>
+
+{% endblock %}

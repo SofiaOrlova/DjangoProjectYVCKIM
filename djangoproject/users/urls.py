@@ -1,7 +1,8 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from users.views import Register, EmailVerify, MyLoginView, indexInstructor, student_dashboard, user_profile
+from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule
+from . import views
 
 urlpatterns = [
 
@@ -30,6 +31,13 @@ urlpatterns = [
     path('teacher_dashboard/', TemplateView.as_view(template_name='teacher_dashboard.html'), name='teacher_dashboard'),
    # path('student_dashboard/', TemplateView.as_view(template_name='student_dashboard.html'), name='student_dashboard'),
     path('user_profile/student_dashboard/', student_dashboard),
-    path('student_dashboard/<int:idInstructor>/', indexInstructor),
+    path('user_profile/schedule/', schedule),
+    # path('student_dashboard/<int:idInstructor>/', views.appointment, name='appointment'),
+    path('student_dashboard/<int:idInstructor>/', views.indexInstructor, name='index_instructor'),
+    path('student_dashboard/<int:idInstructor>/appointment', views.appointment, name='appointment'),
     path('manager_dashboard/', TemplateView.as_view(template_name='manager_dashboard.html'), name='manager_dashboard'),
+    path('get_available_times/', views.get_available_times, name='get_available_times'),
+    # path('student_dashboard/<int:idInstructor>/appointment/get_available_times/', views.get_available_times, name='get_available_times'),
+    # path('api/create_appointment/', views.create_appointment_api, name='create_appointment_api'),
+    path('success_url/', views.success_url, name='success_url'),
 ]

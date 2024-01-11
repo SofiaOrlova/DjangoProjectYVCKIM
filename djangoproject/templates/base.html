@@ -17,7 +17,7 @@
         <div class="container">
             <div class="header-els">
                 <div class="header-icon">
-                    <img src="../static/img/logo.svg" alt="logo" class="logo">
+                    <img src="{% static 'img/logo.svg' %}" alt="logo" class="logo">
                 </div>
                 <a href="tel:+7-961-150-00-60" class="item-menu menu-bg tel-menu">+7-961-150-00-60</a>
                 <a href="mailto:allaorl@mail.ru" class="item-menu menu-bg mail-menu">allaorl@mail.ru</a>
@@ -31,12 +31,12 @@
             <ul class="nav">
                 <li class="nav-item">
                     {% if user.is_authenticated %}
-                        <a class="nav-link current-link" href="#">Запись на занятие</a>
+                        <a class="nav-link current-link" href="/users/user_profile/student_dashboard/">Запись на занятие</a>
                     {% endif %}
                 </li>
                 <li class="nav-item">
                     {% if user.is_authenticated %}
-                        <a class="nav-link" href="timetablestudent.html">Расписание</a>
+                        <a class="nav-link" href="/users/user_profile/schedule/">Расписание</a>
                     {% endif %}
                 </li>
                 <li class="nav-item nav-item-logout">

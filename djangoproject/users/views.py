@@ -9,8 +9,18 @@ from django.contrib.auth.views import LoginView
 from users.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from users.utils import send_email_for_verify
+from django import forms
+from django.urls import reverse
+from django.views.decorators.http import require_GET
+from django.http import JsonResponse
+from datetime import time
+import json
 
 from .models import Instructor
+from .models import Appointment, Instructor
+from .forms import AppointmentForm
+from django.shortcuts import get_object_or_404
+
 
 User = get_user_model()
 
@@ -97,9 +107,107 @@ def student_dashboard(request):
     }
     return render(request, "student_dashboard.html", context)
 
-def indexInstructor(request, idInstructor):
-    item = Instructor.objects.get(id=idInstructor)
+def student_pickDataTime(request):
+    items = Instructor.objects.all()
     context = {
-        'item':item
+        'items':items
     }
     return render(request, "student_pickDataTime.html", context)
+
+#Это робит--------------------
+def indexInstructor(request, idInstructor):
+    # Получение объекта инструктора по id
+    item = Instructor.objects.get(id=idInstructor)
+    
+    return redirect('appointment', idInstructor=idInstructor)
+
+
+available_times = [
+    time(8, 0),
+    time(9, 30),
+    time(11, 0),
+    time(13, 30),
+    time(15, 0),
+    time(16, 30),
+]
+
+def appointment(request, idInstructor):
+    instructor = get_object_or_404(Instructor, pk=idInstructor)
+
+    if request.method == 'POST':
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            date = form.cleaned_data['date']
+            time = request.POST.get('time')
+
+            existing_appointment = Appointment.objects.filter(date=date, time=time, instructor=instructor).first()
+            if existing_appointment:
+                # if existing_appointment.is_available:
+                #     existing_appointment.is_available = False
+                #     existing_appointment.student = request.user
+                #     existing_appointment.save()
+                #     return redirect('success_url')
+                # else:
+                    return render(request, 'student_pickDataTime.html', {'form': form, 'error_message': 'Время уже занято.'})
+            else:
+                # Присвоение инструктора к записи перед сохранением
+                appointment = form.save(commit=False)
+                appointment.instructor = instructor
+                appointment.is_available = False
+                appointment.time = time
+                appointment.student = request.user
+                appointment.save()
+                return redirect('success_url')
+    else:
+        form = AppointmentForm()
+
+        date = form['date'].value()
+        existing_appointments = Appointment.objects.filter(date=date)
+        occupied_times = [appointment.time for appointment in existing_appointments if not appointment.is_available]
+        available_times_filtered = [t for t in available_times if t not in occupied_times]
+
+        time_choices = [(t.strftime('%H:%M'), t.strftime('%H:%M')) for t in available_times_filtered]
+        form.fields['time'] = forms.ChoiceField(choices=time_choices)
+
+    return render(request, 'student_pickDataTime.html', {'form': form})
+
+
+def success_url(request):
+    return render(request, 'success_url.html')
+
+
+def get_available_times(request):
+    selected_date = request.GET.get("date")
+    instructor_id = request.GET.get("instructor_id")
+    
+    # Фильтруйте доступное время на основе выбранной даты
+    existing_appointments = Appointment.objects.filter(date=selected_date, instructor_id=instructor_id)
+    occupied_times = [appointment.time.strftime('%H:%M') for appointment in existing_appointments if not appointment.is_available]
+
+    
+    available_times = ["08:00", "09:30", "11:00", "13:30", "15:00", "16:30"]
+    
+    # Уберите недоступное (занятое) время из доступного времени
+    available_times = [time for time in available_times if time not in occupied_times]
+    
+    return JsonResponse(available_times, safe=False)
+
+def schedule(request):
+    user_id = request.user.id  # Получаем id текущего пользователя
+    appointments = Appointment.objects.filter(student_id=user_id)
+    
+    # Остальной код остается без изменений
+    appointments_data = []
+    for appointment in appointments:
+        appointments_data.append({
+            'id': appointment.id,
+            'date': appointment.date.strftime('%Y-%m-%d'),
+            'time': appointment.time.strftime('%H:%M:%S'),
+            'instructor': f"{appointment.instructor.second_name} {appointment.instructor.name} {appointment.instructor.surname}",
+        })
+
+    appointments_json = json.dumps(appointments_data)
+
+    context = {'appointments_json': appointments_json, 'user_id': user_id}
+    return render(request, 'schedule.html', context)
+

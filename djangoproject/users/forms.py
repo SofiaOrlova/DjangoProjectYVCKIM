@@ -4,10 +4,13 @@ from django.contrib.auth.forms import (
     AuthenticationForm as DjangoAuthenticationForm,
 )
 from django import forms
+from datetime import date
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from users.utils import send_email_for_verify
+from .models import Appointment
+from datetime import time
 
 
 User = get_user_model()
@@ -58,3 +61,22 @@ class UserCreationForm(DjangoUserCreationForm):
     class Meta(DjangoUserCreationForm.Meta):
         model = User
         fields = ("first_name", "last_name", "username", "email")
+
+
+available_times = [
+    time(8, 0),
+    time(9, 30),
+    time(11, 0),
+    time(13, 30),
+    time(15, 0),
+    time(16, 30),
+]
+
+class AppointmentForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['date','time', 'student']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date', 'min': date.today()}),
+            'time': forms.TextInput(),  
+        }

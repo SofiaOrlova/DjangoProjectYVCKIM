@@ -23,3 +23,16 @@ class Instructor(models.Model):
     def __str__(self):
         return self.second_name
 
+
+class Appointment(models.Model):
+    date = models.DateField()
+    time = models.TimeField()
+    is_available = models.BooleanField(default=True)
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True)
+
+
+class AvailableTime(models.Model):
+    date = models.DateField()
+    time = models.TimeField()
+    instructor = models.ForeignKey(User, on_delete=models.CASCADE)
