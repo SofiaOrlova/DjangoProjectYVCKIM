@@ -252,3 +252,54 @@ header{
 .date-title{
     text-align: center;
 }
+
+.fc-event{
+    display: flex;
+    flex-direction: column;
+}
+
+.fc-event-title{
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.fc-daygrid-event{
+    margin-top: 30px !important;
+}
+
+.fc-event-title span:first-child{
+    font-weight: 500;
+    color: #21405fc7;
+}
+
+.fc-view-harness-active{
+    /* max-height: 70vh; */
+    margin-bottom: 70px;
+}
+
+.fc-event-title {
+    white-space: normal;
+}
+
+/* __________________   success_url css ______________________ */
+
+.label-note{
+    font-weight: 600;
+    color: #21405fc7;
+    padding-right: 10px;
+}
+
+.note-title{
+    text-align: center;
+    margin: 40px 0 30px 0;
+    font-size: 24px;
+}
+
+.note{
+    width: 90vh;
+    padding: 50px;
+    margin: 0 auto;
+    box-shadow: 0px 0px 36px -9px rgba(34, 60, 80, 0.24);
+    border-radius: 20px;
+}

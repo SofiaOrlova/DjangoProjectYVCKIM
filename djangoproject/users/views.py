@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_GET
 from django.http import JsonResponse
 from datetime import time
+from datetime import datetime
 import json
 
 from .models import Instructor
@@ -91,7 +92,7 @@ def user_profile(request):
     if request.user.is_authenticated:
         # Проверьте принадлежность пользователя к группам и перенаправьте на соответствующую страницу
         if request.user.groups.filter(name='Преподаватель').exists():
-            return redirect('teacher_dashboard')
+            return redirect('teacher_dashboard/')
         elif request.user.groups.filter(name='Ученик').exists():
             return redirect('student_dashboard/')
         elif request.user.groups.filter(name='Менеджер').exists():
@@ -102,8 +103,22 @@ def user_profile(request):
 
 def student_dashboard(request):
     items = Instructor.objects.all()
+    appointments = Appointment.objects.filter(date__gte=datetime.now().date())
+    
+    appointments_data = []
+    for appointment in appointments:
+        appointments_data.append({
+            'id': appointment.id,
+            'date': appointment.date.strftime('%d'),
+            'time': appointment.time.strftime('%H:%M:%S'),
+            # 'instructor': f"{appointment.instructor.second_name} {appointment.instructor.name} {appointment.instructor.surname}",
+            'instructor': appointment.instructor.id,
+        })
+
+    appointments_json = json.dumps(appointments_data)
     context = {
-        'items':items
+        'items':items,
+        'appointments':appointments_json
     }
     return render(request, "student_dashboard.html", context)
 
@@ -157,7 +172,9 @@ def appointment(request, idInstructor):
                 appointment.time = time
                 appointment.student = request.user
                 appointment.save()
-                return redirect('success_url')
+                context = {'appointments': appointment}
+                return render(request, 'success_url.html', context)
+                # return redirect('success_url')
     else:
         form = AppointmentForm()
 
@@ -172,8 +189,8 @@ def appointment(request, idInstructor):
     return render(request, 'student_pickDataTime.html', {'form': form})
 
 
-def success_url(request):
-    return render(request, 'success_url.html')
+# def success_url(request):
+#     return render(request, 'success_url.html')
 
 
 def get_available_times(request):
@@ -211,3 +228,26 @@ def schedule(request):
     context = {'appointments_json': appointments_json, 'user_id': user_id}
     return render(request, 'schedule.html', context)
 
+    
+def teacher_dashboard(request):
+    # instructor_id = request.user.instructor.id  # Получаем id текущего инструктора
+    user_id = request.user.id 
+    instructor = Instructor.objects.get(user_id=user_id)
+    instructor_id = instructor.id
+    
+    appointments = Appointment.objects.filter(instructor_id=instructor_id)
+    
+    # Остальной код остается без изменений
+    appointments_data = []
+    for appointment in appointments:
+        appointments_data.append({
+            'id': appointment.id,
+            'date': appointment.date.strftime('%Y-%m-%d'),
+            'time': appointment.time.strftime('%H:%M:%S'),
+            'student': f"{appointment.student.first_name} {appointment.student.last_name}",
+        })
+
+    appointments_json = json.dumps(appointments_data)
+
+    context = {'appointments_json': appointments_json, 'user_id': instructor_id}
+    return render(request, 'teacher_dashboard.html', context)

@@ -19,6 +19,7 @@ class Instructor(models.Model):
     second_name = models.CharField(max_length=100)
     name=models.CharField(max_length=100)
     surname = models.CharField(max_length=100)
+    user_id = models.CharField(max_length=10)
 
     def __str__(self):
         return self.second_name

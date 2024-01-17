@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule
+from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard
 from . import views
 
 urlpatterns = [
@@ -28,7 +28,7 @@ urlpatterns = [
     path('register/', Register.as_view(), name='register'),
 
     path('user_profile/', user_profile, name='user_profile'),
-    path('teacher_dashboard/', TemplateView.as_view(template_name='teacher_dashboard.html'), name='teacher_dashboard'),
+    path('user_profile/teacher_dashboard/', teacher_dashboard),
    # path('student_dashboard/', TemplateView.as_view(template_name='student_dashboard.html'), name='student_dashboard'),
     path('user_profile/student_dashboard/', student_dashboard),
     path('user_profile/schedule/', schedule),
@@ -39,5 +39,5 @@ urlpatterns = [
     path('get_available_times/', views.get_available_times, name='get_available_times'),
     # path('student_dashboard/<int:idInstructor>/appointment/get_available_times/', views.get_available_times, name='get_available_times'),
     # path('api/create_appointment/', views.create_appointment_api, name='create_appointment_api'),
-    path('success_url/', views.success_url, name='success_url'),
+    # path('success_url/', views.success_url, name='success_url'),
 ]

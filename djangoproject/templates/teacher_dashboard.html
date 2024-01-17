@@ -1,13 +1,138 @@
-{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User autherization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600&family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-els">
+                <div class="header-icon">
+                    <img src="{% static 'img/logo.svg' %}" alt="logo" class="logo">
+                </div>
+                <a href="tel:+7-961-150-00-60" class="item-menu menu-bg tel-menu">+7-961-150-00-60</a>
+                <a href="mailto:allaorl@mail.ru" class="item-menu menu-bg mail-menu">allaorl@mail.ru</a>
+                <p class="text-menu">Пн-Пт: 9-19 <br> Сб: 10-13 <br>
+                    г.Кимовск ул.Бессолова д.59 оф.3 </p>
+            </div>
+        </div>
+    </header>
+    <main>
+        <nav class="container">
+            <ul class="nav">
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link current-link" href="/users/user_profile/schedule/">Расписание</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item nav-item-logout">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="nav-link img-exit">Выйти</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-login" >Войти </a>|<a href="{% url 'register' %}" class="nav-login" > Зарегистрироваться</a>
+                    {% endif %}
+                    
+                </li>
+            </ul>
+        </nav>
 
-{% block content%}
-    <h1>Home page</h1>
-    <h2>Инструктор</h2>
-    <hr>
+    </main>
+    <div class="container">
+        <h2 class="title-client">Расписание инструктора</h2>
+        <div id='calendar'></div>
+    </div>
 
-    {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}">Logout</a>
-    {% else %}
-        <a href="{% url 'login' %}">Login</a> | <a href="{% url 'register' %}">Register</a>
-    {% endif %}
-{% endblock %}
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script>
+
+      document.addEventListener('DOMContentLoaded', function() {
+        var user_id = parseInt("{{ user_id }}");
+        var appointments_json = '{{ appointments_json|escapejs }}';
+        var appointments;
+
+        try {
+            appointments = JSON.parse(appointments_json);
+
+        } catch (error) {
+            console.error('Ошибка при парсинге JSON:', error);
+            appointments = [];
+        }
+        console.log(appointments);
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridWeek',
+          locale: 'ru',
+          firstDay: '1',
+          buttonText: {
+            today:    'сегодня',
+          },
+          eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          },
+          events: appointments.map(function(appointment) {
+                var startTime = appointment.date + 'T' + appointment.time;
+                console.log(appointment.student);
+                return {
+                    title: appointment.student,
+                    start: startTime,
+                };
+            }),
+            
+        });
+        calendar.render();    
+
+        applyCustomStyles();
+
+        var btnCalendar = document.querySelectorAll('.fc-button');
+
+        btnCalendar.forEach(btn=>{
+            btn.addEventListener('click', event =>{
+                applyCustomStyles();
+            });
+        });
+
+      });
+
+    
+    function applyCustomStyles() {
+        var eventElements = document.querySelectorAll('.fc-event');
+        console.log(eventElements);
+        var eventTimeElements = document.querySelectorAll('.fc-event-time');
+        console.log(eventTimeElements);
+        eventTimeElements.forEach(function(element) {
+            var originalTime = element.textContent.trim();
+            var [hours, minutes] = originalTime.split(':').map(Number);
+            minutes += 90;
+            if (minutes === 120) {
+                    hours += 2;
+                    minutes -= 120;
+                }
+
+            if (minutes === 90) {
+                hours += 1;
+                minutes -= 60;
+            }
+            var newTime = hours + ':' + padNumber(minutes);
+            element.textContent = originalTime + '-' + newTime;
+        });
+    }
+
+    function padNumber(number) {
+        return number < 10 ? '0' + number : number;
+    }
+
+    </script>
+</body>
+</html>
