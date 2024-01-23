@@ -37,6 +37,15 @@
     width: 100%;
 }
 
+table.table th, table.table td {
+    text-align: center;
+}
+
+/* td{
+    display: flex;
+    justify-content: center;
+} */
+
 @media (min-width: 992px){
     .img-exit{
         padding-left: 20px;
@@ -81,7 +90,8 @@
 
 .btn-users{
     max-width: 400px;
-    margin: 10px auto;
+    margin: 0 auto;
+    display: flex;
 }
 
 .form-check-reg{
@@ -111,4 +121,36 @@ input[type=checkbox], input[type=radio]{
     .sidebar-fixed{
         display: none;
     }
+}
+
+/* _________________ add_user_data.html_________________ */
+
+.input-add-data input{
+    height: 48px;
+    background: rgba(0, 0, 0, 0.05);
+    color: #000000c4;
+    font-size: 16px;
+    box-shadow: none;
+    border: 1px solid transparent;
+    padding-left: 20px;
+    padding-right: 20px;
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.25rem;
+    margin-bottom: 10px;
+    display: block;
+    width: 100%;
+}
+
+.add-data-form{
+    margin-top: 15px;
+}
+
+.add-data-form input:focus{
+    outline: none;
+    background: rgba(0, 0, 0, 0.07);
+}
+
+.add-data-form input:active{
+    outline: none;
+    background: rgba(0, 0, 0, 0.07);
 }

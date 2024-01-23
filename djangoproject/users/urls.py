@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation
+from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data
 from . import views
 
 urlpatterns = [
@@ -37,8 +37,10 @@ urlpatterns = [
     # path('student_dashboard/<int:idInstructor>/', views.appointment, name='appointment'),
     path('student_dashboard/<int:idInstructor>/', views.indexInstructor, name='index_instructor'),
     path('student_dashboard/<int:idInstructor>/appointment', views.appointment, name='appointment'),
-    path('user_profile/manager_dashboard/', TemplateView.as_view(template_name='manager_dashboard.html'), name='manager_dashboard'),
-    path('user_profile/manager_add_users_data/', TemplateView.as_view(template_name='manager_add_users_data.html'), name='manager_add_users_data'),
+    path('user_profile/manager_dashboard/', manager_dashboard),
+    path('user_profile/manager_dashboard/confirm_users/', confirm_users, name='confirm_users'),
+    path('user_profile/manager_add_users_data/', manager_add_users_data, name='manager_add_users_data'),
+    path('user_profile/manager_add_users_data/add_data/<int:user_id>/', add_user_data, name='add_user_data'),
     path('user_profile/manager_documents/', TemplateView.as_view(template_name='manager_documents.html'), name='manager_documents'),
     path('user_profile/manager_document_dogovor/', TemplateView.as_view(template_name='manager_document_dogovor.html'), name='manager_document_dogovor'),
     path('user_profile/manager_document_group/', TemplateView.as_view(template_name='manager_document_group.html'), name='manager_document_group'),

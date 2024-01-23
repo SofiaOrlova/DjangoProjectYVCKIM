@@ -6,7 +6,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.core.exceptions import ValidationError
 from django.contrib.auth.tokens import default_token_generator as token_generator
 from django.contrib.auth.views import LoginView
-from users.forms import UserCreationForm, AuthenticationForm
+from users.forms import UserCreationForm, AuthenticationForm, UserDataForm
 from django.contrib.auth.decorators import login_required
 from users.utils import send_email_for_verify
 from django import forms
@@ -20,7 +20,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Instructor
-from .models import Appointment, Instructor, Notation
+from .models import Appointment, Instructor, Notation, UserData
 from .forms import AppointmentForm
 from django.shortcuts import get_object_or_404
 
@@ -331,3 +331,52 @@ def teacher_notation(request):
     context = {'users': users_sorted, 'form': form}
 
     return render(request, 'teacher_notation.html', context)
+
+
+def manager_dashboard(request):
+    users = User.objects.filter(email_verify=0) 
+    return render(request, 'manager_dashboard.html', {'users': users})
+
+@require_POST
+def confirm_users(request):
+    user_ids = request.POST.getlist('user_ids')  # Получаем список выбранных пользователей
+    User.objects.filter(id__in=user_ids).update(email_verify=1)  # Обновляем поле email_verify для выбранных пользователей
+
+    response_data = {'reload_page': True}
+    return JsonResponse(response_data)
+
+
+def manager_add_users_data(request):
+    users = User.objects.filter(email_verify=1) 
+    return render(request, 'manager_add_users_data.html', {'users': users})
+
+
+# def add_user_data(request, user_id):
+#     user = User.objects.get(id=user_id)
+
+#     if request.method == 'POST':
+#         form = UserDataForm(request.POST)
+#         if form.is_valid():
+#             user_data = form.save(commit=False)
+#             user_data.user = user
+#             user_data.save()
+#             return redirect('manager_add_users_data')
+#     else:
+#         form = UserDataForm()
+
+#     return render(request, 'add_user_data.html', {'user': user, 'form': form})
+
+def add_user_data(request, user_id):
+    user = User.objects.get(id=user_id)
+    user_data, created = UserData.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        form = UserDataForm(request.POST, instance=user_data)
+        if form.is_valid():
+            form.save()
+            return redirect('manager_add_users_data')
+    else:
+        form = UserDataForm(instance=user_data)
+
+    return render(request, 'add_user_data.html', {'user': user, 'form': form})
+

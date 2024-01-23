@@ -32,10 +32,16 @@
                     {{form.username.errors}}
 
                     <div class="input-login">
+                        <label class="form-label" for="{{form.last_name.id_for_label}}">Отчество</label>
+                        {{form.surname}}
+                    </div>
+                    {{form.surname.errors}}
+
+                    <!-- <div class="input-login">
                         <label class="form-label" for="{{form.username.id_for_label}}">Логин</label>
                         {{form.username}}
                     </div>
-                    {{form.username.errors}}
+                    {{form.username.errors}} -->
 
                     <div class="input-login">
                         <label class="form-label" for="{{form.email.id_for_label}}">Email</label>

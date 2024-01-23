@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from users.utils import send_email_for_verify
-from .models import Appointment
+from .models import Appointment, UserData
 from datetime import time
 
 
@@ -51,16 +51,13 @@ class UserCreationForm(DjangoUserCreationForm):
     )
     first_name = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
     last_name = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
-    username = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
+    surname = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
+    # username = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
     email = forms.CharField(widget=forms.EmailInput(attrs={ 'class': 'form-control' }))
-    # username = forms.CharField(widget=forms.TextInput(attrs={
-    #     'class': 'form-control' }))
-    # password = forms.CharField(widget=forms.PasswordInput(attrs={
-    #     'class': 'form-control'}))
         
     class Meta(DjangoUserCreationForm.Meta):
         model = User
-        fields = ("first_name", "last_name", "username", "email")
+        fields = ("first_name", "last_name", "surname", "email")
 
 
 available_times = [
@@ -80,3 +77,21 @@ class AppointmentForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date', 'min': date.today()}),
             'time': forms.TextInput(),  
         }
+
+# class UserDataForm(forms.ModelForm):
+#     class Meta:
+#         model = UserData
+#         fields = ['passport_series', 'passport_number', 'registration', 'group_number', 'date_of_birth']
+        
+class UserDataForm(forms.ModelForm):
+    class Meta:
+        model = UserData
+        fields = ['passport_series', 'passport_number', 'registration', 'group_number', 'date_of_birth']
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(UserDataForm, self).__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.required = False
