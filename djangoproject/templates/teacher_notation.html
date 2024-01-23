@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User autherization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600&family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-els">
+                <div class="header-icon">
+                    <img src="{% static 'img/logo.svg' %}" alt="logo" class="logo">
+                </div>
+                <a href="tel:+7-961-150-00-60" class="item-menu menu-bg tel-menu">+7-961-150-00-60</a>
+                <a href="mailto:allaorl@mail.ru" class="item-menu menu-bg mail-menu">allaorl@mail.ru</a>
+                <p class="text-menu">Пн-Пт: 9-19 <br> Сб: 10-13 <br>
+                    г.Кимовск ул.Бессолова д.59 оф.3 </p>
+            </div>
+        </div>
+    </header>
+    <main>
+        <nav class="container">
+            <ul class="nav">
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link" href="/users/user_profile/schedule/">Расписание</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link current-link" href="/users/user_profile/teacher_notation/">Добавить занятие</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item nav-item-logout">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="nav-link img-exit">Выйти</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-login" >Войти </a>|<a href="{% url 'register' %}" class="nav-login" > Зарегистрироваться</a>
+                    {% endif %}
+                    
+                </li>
+            </ul>
+        </nav>
+    </main>
+    <div class="container">
+        <form method="post" id="appointment-form">
+            {% csrf_token %}
+
+            <div class="title-notation">Выберите пользователя:</div>
+            {% if users %}
+                <ul class="list-users">
+                    {% for user in users %}
+                        <li>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="user_radio" id="user_{{ user.id }}" value="{{ user.id }}">
+                                <label class="form-check-label" for="user_{{ user.id }}">
+                                    {{ user.first_name }} {{ user.last_name }}
+                                </label>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No users found.</p>
+            {% endif %}
+
+            <div class="date-calendar date-calendar-teacher">
+
+                <div class="date-title date-title-teacher">Укажите дату вождения:</div>
+                {{ form.date }}
+                <div id="id_date"></div>
+            
+                
+                <div class="display-none" style="display: none;">
+                {{ form.time.label_tag }}
+                {{ form.time }}
+                </div>
+        
+                <div id="time-buttons">
+                    <!-- Создайте блоки или кнопки для времени здесь -->
+                </div>
+                
+                <input type="submit" value="Записать" class="btn btn-primary btn-note">
+             </div>
+    
+        </form>
+    </div>
+
+    <!-- Ссылка на CDN Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+      <!-- Ссылка на CDN Flatpickr и дополнительные опции  -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>  
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация Flatpickr с дополнительными опциями
+            flatpickr("#id_date", {
+                minDate: "today",  // Минимальная дата
+                maxDate: new Date().fp_incr(60),  // Максимальная дата (через 2 месяца)
+                disable: [
+                    function(date) {
+                        // Выключите воскресенье (нумерация дней недели начинается с 0)
+                        return date.getDay() === 0;
+                    }
+                ],
+                dateFormat: "Y-m-d",  // Формат даты
+                // locale: "ru",  // Указываем код языка для русской локализации
+                locale: {
+                    firstDayOfWeek: 1,
+                    weekdays: {
+                    shorthand: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+                    longhand: ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'],         
+                    }, 
+                    months: {
+                    shorthand: ['Янв', 'Фев', 'Март', 'Апр', 'Май', 'Июнь', 'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+                    longhand: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+                    },
+                },
+
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Найдем элемент с классом "flatpickr-calendar"
+            var flatpickrCalendar = document.querySelector('.flatpickr-calendar');
+            var flatpickrCalendars = document.querySelectorAll('.flatpickr-calendar');
+
+            // Проверим, что элемент существует, прежде чем добавлять класс
+            if (flatpickrCalendar) {
+                // Добавим класс "open"
+                flatpickrCalendar.classList.add('open');
+                // flatpickrCalendar.classList.add('animate');
+                flatpickrCalendar.classList.add('arrowTop');
+                flatpickrCalendar.classList.add('arrowLeft');
+                console.log("class");
+                flatpickrCalendar.style.top = '450.8px';
+                flatpickrCalendar.style.left = '386.05px';
+                flatpickrCalendar.style.right = 'auto';
+                console.log("style");
+                if (flatpickrCalendars.length > 0) {
+                    // Получим последний элемент
+                    var lastFlatpickrCalendar = flatpickrCalendars[flatpickrCalendars.length - 1];
+                    lastFlatpickrCalendar.remove();
+                }
+            }
+        });
+
+
+        document.getElementById("id_date").addEventListener("change", function () {
+            var selectedDate = this.value;
+            var timeButtons = document.getElementById("time-buttons");
+            timeButtons.innerHTML = ""; // Очистите текущие блоки времени
+
+            // Получение id инструктора из текущего URL
+            var instructorId = extractInstructorId();
+            console.log(instructorId);            
+
+            // Отправьте AJAX-запрос на сервер, чтобы получить доступное время для выбранной даты и инструктора
+            fetch("/users/get_available_times/?date=" + selectedDate + "&instructor_id=" + instructorId)
+                .then((response) => response.json())
+                .then((data) => {
+                    // Создайте блоки для каждого доступного времени
+                    data.forEach(function (time) {
+                        var timeBlock = document.createElement("div");
+                        timeBlock.className = "time-block";
+                        timeBlock.textContent = time;
+                        timeBlock.addEventListener("click", function () {
+
+                            document.getElementById("id_time").value = time;
+                            console.log(document.getElementById("id_time").value);
+
+                            // Создание блоков времени
+                            timeBlocks = document.querySelectorAll('.time-block');
+
+                            // Снимаем класс со всех элементов
+                            timeBlocks.forEach(function (otherTimeBlock) {
+                                if (otherTimeBlock !== timeBlock) {
+                                    otherTimeBlock.classList.remove('clicked');
+                                }
+                            });
+
+                            timeBlock.classList.toggle('clicked');
+                            console.log("click");
+                        });
+                        timeButtons.appendChild(timeBlock);
+                    });
+                });
+        });
+
+    
+        function extractInstructorId() {
+            let idInstructor = '{{ user.id }}'
+            console.log(idInstructor);
+            console.log(typeof idInstructor);
+            if(idInstructor === '9'){
+                return 1;
+            }
+            if(idInstructor === '10'){
+                return 2;
+            }
+            if(idInstructor === '11'){
+                return 3;
+            }
+            if(idInstructor === '12'){
+                return 4;
+            }
+            return null;
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</body>
+</html>

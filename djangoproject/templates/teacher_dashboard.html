@@ -8,8 +8,10 @@
     <title>User autherization</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;600&family=Roboto:wght@100;300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
 </head>
 <body>
     <header>
@@ -31,6 +33,11 @@
                 <li class="nav-item">
                     {% if user.is_authenticated %}
                         <a class="nav-link current-link" href="/users/user_profile/schedule/">Расписание</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link" href="/users/user_profile/teacher_notation/">Добавить занятие</a>
                     {% endif %}
                 </li>
                 <li class="nav-item nav-item-logout">
@@ -66,9 +73,10 @@
             console.error('Ошибка при парсинге JSON:', error);
             appointments = [];
         }
-        console.log(appointments);
+        // console.log(appointments);
 
         var calendarEl = document.getElementById('calendar');
+        var selectedEventId;
         var calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: 'dayGridWeek',
           locale: 'ru',
@@ -83,17 +91,42 @@
           },
           events: appointments.map(function(appointment) {
                 var startTime = appointment.date + 'T' + appointment.time;
-                console.log(appointment.student);
+                // console.log(appointment.id);
                 return {
+                    id: appointment.id,
                     title: appointment.student,
                     start: startTime,
                 };
             }),
+            eventClick: function(info) {
+                selectedEventId = info.event.id;
+                console.log('Выбранное событие ID:', selectedEventId);
+                if (confirm('Вы уверены, что хотите удалить событие?')) {
+                // Пользователь согласился удалить событие
+                    deleteEvent(selectedEventId);
+                }
+            },
             
         });
+
         calendar.render();    
 
         applyCustomStyles();
+
+        // console.log(calendarEl);
+
+        // calendarEl.addEventListener('click', function(info) {
+        //     var event = calendar.getEventById(50);
+        //     // var event = info.event || (info.jsEvent && info.jsEvent.target.closest('.fc-event'));
+        //     console.log("click calendar");
+        //     console.log(event);
+        //     console.log(info.events);
+        //     if (event) {
+        //         selectedEventId = event.id;  // сохраняем ID выбранного события
+        //         console.log('Выбрано событие с ID:', selectedEventId);
+        //     }
+        // });
+       
 
         var btnCalendar = document.querySelectorAll('.fc-button');
 
@@ -103,14 +136,74 @@
             });
         });
 
+        function deleteEvent(selectedEventId){
+            var selectedEvent = calendar.getEventById(selectedEventId);
+
+            if (selectedEvent) {
+                // Отправляем запрос на сервер для удаления события
+                $.ajax({
+                    url: 'delete_event/',  // Замените на реальный путь
+                    type: 'POST',
+                    data: JSON.stringify({ event_id: selectedEvent.id }),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log('Событие успешно удалено!');
+                        location.reload();
+                        selectedEvent.remove();
+                    },
+                    error: function(error) {
+                        console.error('Ошибка при удалении события:', error);
+                    }
+                });
+            } else {
+                console.warn('Не выбрано событие для удаления.');
+            }
+        }
+
+
+        // var deleteEventBtn = document.getElementById('deleteEventBtn');
+        // var deleteEventBtns = document.querySelectorAll("#deleteEventBtn");
+        // console.log(deleteEventBtns);
+        // deleteEventBtns.forEach(deleteEventBtn=>{
+        //     deleteEventBtn.addEventListener('click', function() {
+        //         console.log("click");
+        //         // Получаем выбранное событие из календаря
+        //         var selectedEvent = calendar.getEventById(selectedEventId);
+
+        //         if (selectedEvent) {
+        //             // Отправляем запрос на сервер для удаления события
+        //             $.ajax({
+        //                 url: 'delete_event/',  // Замените на реальный путь
+        //                 type: 'POST',
+        //                 data: JSON.stringify({ event_id: selectedEvent.id }),
+        //                 contentType: 'application/json; charset=utf-8',
+        //                 dataType: 'json',
+        //                 success: function(response) {
+        //                     console.log('Событие успешно удалено!');
+        //                     applyCustomStyles();
+        //                     selectedEvent.remove();
+        //                 },
+        //                 error: function(error) {
+        //                     console.error('Ошибка при удалении события:', error);
+        //                 }
+        //             });
+        //         } else {
+        //             console.warn('Не выбрано событие для удаления.');
+        //         }
+        //     });
+        // });
+        
+
       });
 
     
+
     function applyCustomStyles() {
         var eventElements = document.querySelectorAll('.fc-event');
-        console.log(eventElements);
+        // console.log(eventElements);
         var eventTimeElements = document.querySelectorAll('.fc-event-time');
-        console.log(eventTimeElements);
+        // console.log(eventTimeElements);
         eventTimeElements.forEach(function(element) {
             var originalTime = element.textContent.trim();
             var [hours, minutes] = originalTime.split(':').map(Number);
@@ -126,6 +219,12 @@
             }
             var newTime = hours + ':' + padNumber(minutes);
             element.textContent = originalTime + '-' + newTime;
+        });
+        let eventCards = document.querySelectorAll(".fc-event");
+        // console.log(eventCards);
+        eventCards.forEach(card=>{
+            card.innerHTML += "<button id='deleteEventBtn' class='input-group-text'><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-trash3' viewBox='0 0 16 16'><path d='M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z'/></svg></button>";
+            
         });
     }
 

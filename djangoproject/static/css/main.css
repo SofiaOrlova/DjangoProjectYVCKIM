@@ -264,9 +264,9 @@ header{
     text-align: center;
 }
 
-.fc-daygrid-event{
-    margin-top: 30px !important;
-}
+/* .fc-event{
+    margin-top: 30px;
+} */
 
 .fc-event-title span:first-child{
     font-weight: 500;
@@ -303,3 +303,46 @@ header{
     box-shadow: 0px 0px 36px -9px rgba(34, 60, 80, 0.24);
     border-radius: 20px;
 }
+
+/* __________________   teacher_dashboard css ______________________ */
+#deleteEventBtn{
+    margin-top: 10px;
+}
+
+.fc-event{
+    padding: 10px 0;
+}
+
+.fc .fc-daygrid-event{
+    margin-top: 20px;
+}
+
+.fc-daygrid-event-dot{
+    display: none;
+}
+
+/* __________________   teacher_notation css ______________________ */
+
+.title-notation{
+    margin-top: 40px;
+    font-weight: 500;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.list-users{
+    list-style-type: none;
+    margin-top: 15px;
+    padding: 0;
+}
+
+.date-title-teacher{
+    font-weight: 500;
+    font-size: 20px;
+    margin-bottom: 10px;
+    padding: 0 20px;
+}
+/* .date-calendar-teacher{
+    grid-template-rows: repeat(2,1fr);
+} */

@@ -16,9 +16,11 @@ from django.http import JsonResponse
 from datetime import time
 from datetime import datetime
 import json
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import Instructor
-from .models import Appointment, Instructor
+from .models import Appointment, Instructor, Notation
 from .forms import AppointmentForm
 from django.shortcuts import get_object_or_404
 
@@ -96,7 +98,7 @@ def user_profile(request):
         elif request.user.groups.filter(name='Ученик').exists():
             return redirect('student_dashboard/')
         elif request.user.groups.filter(name='Менеджер').exists():
-            return redirect('manager_dashboard')
+            return redirect('manager_dashboard/')
     else:
         return redirect('login')  # Пользователь не вошел в систему
     
@@ -251,3 +253,81 @@ def teacher_dashboard(request):
 
     context = {'appointments_json': appointments_json, 'user_id': instructor_id}
     return render(request, 'teacher_dashboard.html', context)
+
+
+@csrf_exempt
+@require_POST
+def delete_event(request):
+    try:
+        data = json.loads(request.body)
+        event_id = data.get('event_id')
+
+        if event_id is not None:
+            # Ищем событие по ID и удаляем его из базы данных
+            appointment = Appointment.objects.get(id=event_id)
+            appointment.delete()
+
+            return JsonResponse({'status': 'success'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'ID события не указан.'})
+
+    except json.JSONDecodeError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)})
+    
+
+def teacher_notation(request):
+    # Получаем текущего пользователя
+    current_user = request.user
+
+    # Находим записи в таблице Notation, где текущий пользователь является инструктором
+    notations = Notation.objects.filter(instructor_id=current_user.id)
+
+    # Получаем ID пользователей из записей в таблице Notation
+    user_ids = notations.values_list('user_id', flat=True)
+
+    # Получаем данные пользователей из таблицы UserProfile
+    users_sorted = User.objects.filter(id__in=user_ids)
+
+
+    user_id_current = request.user.id 
+    instructor = Instructor.objects.get(user_id=user_id_current)
+    instructor_id = instructor.id
+
+
+    if request.method == 'POST':
+        form = AppointmentForm(request.POST)
+        if form.is_valid():
+            date = form.cleaned_data['date']
+            time = request.POST.get('time')
+
+            existing_appointment = Appointment.objects.filter(date=date, time=time, instructor=instructor_id).first()
+            if existing_appointment:
+                    return render(request, 'teacher_notation.html', {'form': form, 'error_message': 'Время уже занято.'})
+            else:
+                # Присвоение инструктора к записи перед сохранением
+                appointment = form.save(commit=False)
+                appointment.instructor = instructor
+                appointment.is_available = False
+                appointment.time = time
+                # Извлечение выбранного пользователя из radio button
+                selected_user_id = request.POST.get('user_radio')
+                selected_user = User.objects.get(id=selected_user_id)
+                # Присвоение выбранного пользователя к записи перед сохранением
+                appointment.student = selected_user
+                appointment.save()
+                context = {'appointments': appointment}
+                return render(request, 'success_url.html', context)
+    else:
+        form = AppointmentForm()
+
+        date = form['date'].value()
+        existing_appointments = Appointment.objects.filter(date=date)
+        occupied_times = [appointment.time for appointment in existing_appointments if not appointment.is_available]
+        available_times_filtered = [t for t in available_times if t not in occupied_times]
+
+        time_choices = [(t.strftime('%H:%M'), t.strftime('%H:%M')) for t in available_times_filtered]
+        form.fields['time'] = forms.ChoiceField(choices=time_choices)
+
+    context = {'users': users_sorted, 'form': form}
+
+    return render(request, 'teacher_notation.html', context)

@@ -53,10 +53,10 @@
       </a>
 
       <div class="list-group list-group-flush">
-        <a href="/users/user_profile/manager_dashboard/" class="list-group-item waves-effect active">
+        <a href="/users/user_profile/manager_dashboard/" class="list-group-item waves-effect">
           <i class="fa fa-user mr-3"></i> Подтвердить регистрацию
         </a>
-        <a href="/users/user_profile/manager_add_users_data/" class="list-group-item waves-effect">
+        <a href="/users/user_profile/manager_add_users_data/" class="list-group-item waves-effect active">
           <i class="fa fa-table mr-3"></i> Добавить данные
         </a>
       </div>
@@ -70,7 +70,7 @@
           <h4 class="mb-2 mb-sm-0 pt-1 card-title">
             <a href="#">Ученики</a>
             <span> / </span>
-            <span>Подтверждение регистрации пользователя</span>
+            <span>Добавить данные пользователя</span>
           </h4>
           
           <table class="table">
@@ -89,8 +89,9 @@
                 <td>Иван</td>
                 <td>Иванов</td>
                 <td>mail@kim.ru</td>
-                <td><div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                <td>
+                    <div class="form-check">
+                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
                   </div>
                 </td>
               </tr>
@@ -99,8 +100,9 @@
                 <td>Иван</td>
                 <td>Иванов</td>
                 <td>mail@kim.ru</td>
-                <td><div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                <td>
+                    <div class="form-check">
+                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
                   </div>
                 </td>
               </tr>
@@ -109,14 +111,34 @@
                 <td>Иван</td>
                 <td>Иванов</td>
                 <td>mail@kim.ru</td>
-                <td><div class="form-check">
-                    <input class="form-check-input form-check-reg" type="checkbox" value="" id="flexCheckDefault">
+                <td>
+                  <div class="form-check">
+                    <input class="form-check-input form-check-reg" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <a class="btn btn-primary btn-users" href="#">Подтвердить</a>
+          <div class="data">
+            <div class="mb-3">
+                <label for="PasportInput" class="form-label">Серия паспорта</label>
+                <input type="text" class="form-control" id="PasportInput">
+            </div>
+            <div class="mb-3">
+                <label for="NumberInput" class="form-label">Номер паспорта</label>
+                <input type="text" class="form-control" id="NumberInput">
+            </div>
+            <div class="mb-3">
+                <label for="Input" class="form-label">Прописка</label>
+                <input type="text" class="form-control" id="Input">
+            </div>
+            <div class="mb-3">
+                <label for="GroupInput" class="form-label">Номер группы</label>
+                <input type="text" class="form-control" id="GroupInput">
+            </div>
+         </div>
+          
+          <a class="btn btn-primary btn-users" href="#">Добавить</a>
 
           <!-- <form action="#" class="d-flex justify-content-center">
             <input type="search" class="form-control" placeholder="Введите ваш запрос">
@@ -131,19 +153,14 @@
   
 
   <!-- jQuery -->
-  <!-- <script type="text/javascript" src="js/jquery.min.js"></script> -->
   <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
   <!-- Bootstrap tooltips -->
-  <!-- <script type="text/javascript" src="js/popper.min.js"></script> -->
   <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
   <!-- Bootstrap core JavaScript -->
-  <!-- <script type="text/javascript" src="js/bootstrap.min.js"></script> -->
   <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
   <!-- MDB core JavaScript -->
-  <!-- <script type="text/javascript" src="js/mdb.min.js"></script> -->
   <script type="text/javascript" src="{% static 'js/mdb.min.js' %}"></script>
   <!-- Your custom scripts (optional) -->
   <script type="text/javascript"></script>
-
 </body>
 </html>

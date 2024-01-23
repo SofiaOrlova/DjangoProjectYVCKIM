@@ -37,3 +37,7 @@ class AvailableTime(models.Model):
     date = models.DateField()
     time = models.TimeField()
     instructor = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class Notation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    instructor_id = models.IntegerField()
