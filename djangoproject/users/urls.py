@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data
+from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data, payments, profile, generate_group_journal, manager_document_dogovor, user_dogovor
 from . import views
 
 urlpatterns = [
@@ -33,6 +33,8 @@ urlpatterns = [
     path('user_profile/teacher_dashboard/delete_event/', delete_event, name='delete_event'),
    # path('student_dashboard/', TemplateView.as_view(template_name='student_dashboard.html'), name='student_dashboard'),
     path('user_profile/student_dashboard/', student_dashboard),
+    path('user_profile/payments/', payments),
+    path('user_profile/profile/', profile),
     path('user_profile/schedule/', schedule),
     # path('student_dashboard/<int:idInstructor>/', views.appointment, name='appointment'),
     path('student_dashboard/<int:idInstructor>/', views.indexInstructor, name='index_instructor'),
@@ -42,9 +44,11 @@ urlpatterns = [
     path('user_profile/manager_add_users_data/', manager_add_users_data, name='manager_add_users_data'),
     path('user_profile/manager_add_users_data/add_data/<int:user_id>/', add_user_data, name='add_user_data'),
     path('user_profile/manager_documents/', TemplateView.as_view(template_name='manager_documents.html'), name='manager_documents'),
-    path('user_profile/manager_document_dogovor/', TemplateView.as_view(template_name='manager_document_dogovor.html'), name='manager_document_dogovor'),
+    path('user_profile/manager_document_dogovor/', manager_document_dogovor, name='manager_document_dogovor'),
+    path('user_profile/manager_document_dogovor/user_dogovor/<int:user_id>/', user_dogovor, name='user_dogovor'),
     path('user_profile/manager_document_group/', TemplateView.as_view(template_name='manager_document_group.html'), name='manager_document_group'),
     path('user_profile/manager_document_kniga_vojden/', TemplateView.as_view(template_name='manager_document_kniga_vojden.html'), name='manager_document_kniga_vojden'),
     path('user_profile/manager_document_instructor/', TemplateView.as_view(template_name='manager_document_instructor.html'), name='manager_document_instructor'),
     path('get_available_times/', views.get_available_times, name='get_available_times'),
+    path('user_profile/manager_documents/generate_group_journal', views.generate_group_journal, name='generate_group_journal'),
 ]

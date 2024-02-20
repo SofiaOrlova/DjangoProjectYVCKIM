@@ -31,12 +31,22 @@
             <ul class="nav">
                 <li class="nav-item">
                     {% if user.is_authenticated %}
-                        <a class="nav-link current-link" href="/users/user_profile/student_dashboard/">Запись на занятие</a>
+                        <a class="nav-link" href="/users/user_profile/student_dashboard/">Запись на занятие</a>
                     {% endif %}
                 </li>
                 <li class="nav-item">
                     {% if user.is_authenticated %}
                         <a class="nav-link" href="/users/user_profile/schedule/">Расписание</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link" href="/users/user_profile/payments/">Платежи</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link current-link" href="/users/user_profile/profile/">Профиль</a>
                     {% endif %}
                 </li>
                 <li class="nav-item nav-item-logout">

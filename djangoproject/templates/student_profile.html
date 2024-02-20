@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content%}
+    {% load static %}
+    <div class="container">
+        <div>
+            <h4 class="title-client title-pick">Личный кабинет пользователя</h4>
+            <div class="name-profile">Иванов Иван Иванович</div>
+
+            <div class="mb-3 row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Адрес электронной почты</label>
+                <div class="col-sm-10">
+                  <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com">
+                </div>
+            </div>
+
+            <div class="mb-3 row">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Телефон</label>
+                <div class="col-sm-10">
+                  <input type="text" readonly class="form-control-plaintext" id="staticPhone" value="+7-999-999-99-99">
+                </div>
+            </div>
+             
+
+            
+            <div class="title-toasts">Полученные уведомления от инструктора: </div>
+            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                  <strong class="me-auto">Фамилия Имя Отчество</strong>
+                  <small>05.02.2024</small>
+                  <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                  Здравствуйте, завтра начинаем занятие в городе.
+                </div>
+              </div>
+    
+        </div>
+
+        
+    
+        
+    </div>
+
+
+{% endblock %}

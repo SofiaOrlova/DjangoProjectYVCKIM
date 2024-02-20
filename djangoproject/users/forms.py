@@ -86,7 +86,7 @@ class AppointmentForm(forms.ModelForm):
 class UserDataForm(forms.ModelForm):
     class Meta:
         model = UserData
-        fields = ['passport_series', 'passport_number', 'registration', 'group_number', 'date_of_birth']
+        fields = ['passport_series', 'passport_number', 'group_number', 'date_of_birth', 'region', 'city_or_village', 'street', 'house', 'corps', 'apartment', 'place_of_birth']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
         }

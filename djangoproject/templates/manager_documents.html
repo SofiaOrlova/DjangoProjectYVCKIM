@@ -73,40 +73,35 @@
 
   <main class="pt-5 max-lg-5">
     <div class="container-fluid mt-5">
-      <div class="card mb-4 wow fadeIn">
-        <div class="card body d-sm-flex justify-content-between card-manager">
-          <h4 class="mb-2 mb-sm-0 pt-1 card-title">
-            <a href="#">Документация</a>
-            <span> / </span>
-            <span>Журнал группы</span>
-          </h4>
-          <p>Для автоматического заполнения документа "Журнал группы", необходимо ввести номер группы</p>
-          <div class="data">
-            <!-- <div class="mb-3">
-                <label for="PasportInput" class="form-label">Серия паспорта</label>
-                <input type="text" class="form-control" id="PasportInput">
+        <div class="card mb-4 wow fadeIn">
+            <div class="card body d-sm-flex justify-content-between card-manager">
+                <h4 class="mb-2 mb-sm-0 pt-1 card-title">
+                    <a href="#">Документация</a>
+                    <span> / </span>
+                    <span>Журнал группы</span>
+                </h4>
+                <p>Для автоматического заполнения документа "Журнал группы", необходимо ввести номер группы</p>
+                <div class="data">
+                    <form id="groupJournalForm" method="POST" action="{% url 'generate_group_journal' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="GroupInput" class="form-label">Номер группы</label>
+                            <input type="text" class="form-control" id="GroupInput" name="group_number">
+                        </div>
+                    </form>
+                </div>
+
+                <button class="btn btn-primary btn-users" onclick="submitForm()">Выполнить и скачать документ</button>
             </div>
-            <div class="mb-3">
-                <label for="NumberInput" class="form-label">Номер паспорта</label>
-                <input type="text" class="form-control" id="NumberInput">
-            </div>
-            <div class="mb-3">
-                <label for="Input" class="form-label">Прописка</label>
-                <input type="text" class="form-control" id="Input">
-            </div> -->
-            <div class="mb-3">
-                <label for="GroupInput" class="form-label">Номер группы</label>
-                <input type="text" class="form-control" id="GroupInput">
-            </div>
-         </div>
-          
-       
-          <a class="btn btn-primary btn-users" href="#">Выполнить и скачать документ</a>
         </div>
-      </div>
     </div>
   </main>
-  
+
+  <script>
+      function submitForm() {
+          document.getElementById("groupJournalForm").submit();
+      }
+  </script>
 
   <!-- jQuery -->
   <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>

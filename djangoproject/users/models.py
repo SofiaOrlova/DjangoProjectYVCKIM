@@ -45,11 +45,35 @@ class Notation(models.Model):
 
 class UserData(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    passport_series = models.CharField(max_length=20)
-    passport_number = models.CharField(max_length=20)
-    registration = models.CharField(max_length=255)
-    group_number = models.CharField(max_length=20)
+    passport_series = models.CharField(max_length=20,null=True)
+    passport_number = models.CharField(max_length=20,null=True)
+    group_number = models.CharField(max_length=20,null=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    region = models.CharField(max_length=35,null=True)
+    city_or_village = models.CharField(max_length=50,null=True)
+    street = models.CharField(max_length=40,null=True)
+    house = models.CharField(max_length=10,null=True)
+    corps = models.CharField(max_length=5, null=True)
+    apartment = models.CharField(max_length=10, null=True)
+    place_of_birth= models.CharField(max_length=70, null=True)
 
     def __str__(self):
         return self.user.username
+    
+
+class UserGroups(models.Model):
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    group_id = models.CharField(max_length=2,null=True)
+
+# user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     passport_series = models.CharField(max_length=20)
+#     passport_number = models.CharField(max_length=20)
+#     # registration = models.CharField(max_length=255)
+#     group_number = models.CharField(max_length=20)
+#     date_of_birth = models.DateField(null=True, blank=True)
+#     region = models.CharField(max_length=35)
+#     city_or_village = models.CharField(max_length=50)
+#     street = models.CharField(max_length=40)
+#     house = models.CharField(max_length=10)
+#     corps = models.CharField(max_length=5)
+#     apartment = models.CharField(max_length=10)

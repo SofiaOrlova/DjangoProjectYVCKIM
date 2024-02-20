@@ -32,7 +32,7 @@
             <ul class="nav">
                 <li class="nav-item">
                     {% if user.is_authenticated %}
-                        <a class="nav-link" href="/users/user_profile/schedule/">Расписание</a>
+                        <a class="nav-link" href="/users/user_profile/teacher_dashboard/">Расписание</a>
                     {% endif %}
                 </li>
                 <li class="nav-item">
@@ -40,6 +40,11 @@
                         <a class="nav-link current-link" href="/users/user_profile/teacher_notation/">Добавить занятие</a>
                     {% endif %}
                 </li>
+                <!-- <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link current-link" href="/users/user_profile/teacher_notation/"></a>
+                    {% endif %}
+                </li> -->
                 <li class="nav-item nav-item-logout">
                     {% if user.is_authenticated %}
                         <a href="{% url 'logout' %}" class="nav-link img-exit">Выйти</a>

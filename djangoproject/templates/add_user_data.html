@@ -86,19 +86,55 @@
                             {{form.passport_number.errors}}
                         </div>
                         <div class="input-add-data">
-                            <label class="form-label" for="{{form.registration.id_for_label}}">Прописка</label>
-                            {{form.registration}}
-                            {{form.registration.errors}}
-                        </div>
-                        <div class="input-add-data">
                             <label class="form-label" for="{{form.group_number.id_for_label}}">Номер группы</label>
                             {{form.group_number}}
                             {{form.group_number.errors}}
                         </div>
                         <div class="input-add-data">
                             <label class="form-label" for="{{form.date_of_birth.id_for_label}}">Дата рождения</label>
-                            {{form.date_of_birth}}
+                            <!-- {{form.date_of_birth}} -->
+                            <input type="date" name="date_of_birth" id="id_date_of_birth">
+
                             {{form.date_of_birth.errors}}
+                        </div>
+                        <div class="input-add-data">
+                          <label class="form-label" for="{{form.place_of_birth.id_for_label}}">Место рождения</label>
+                          {{form.place_of_birth}}
+                          {{form.place_of_birth.errors}}
+                        </div>
+
+                        <p class="note note-warning help-text"> Данные по прописке:  </p>
+                        <div class="input-add-data">
+                          <label class="form-label" for="{{form.region.id_for_label}}">Регион (область)</label>
+                          {{form.region}}
+                          {{form.region.errors}}
+                        </div>
+                        <div class="input-add-data">
+                          <label class="form-label" for="{{form.city_or_village.id_for_label}}">Город / поселок</label>
+                          {{form.city_or_village}}
+                          {{form.city_or_village.errors}}
+                        </div>
+                        <div class="input-add-data">
+                          <label class="form-label" for="{{form.street.id_for_label}}">Улица</label>
+                          {{form.street}}
+                          {{form.street.errors}}
+                        </div>
+                        <div class="row g-3 align-items-center input-row">
+                          <div class="col-auto">
+                            <label for="{{form.house.id_for_label}}" class="col-form-label">Дом</label>
+                            {{form.house}}
+                            <!-- <input type="text" class="form-control" name="house" maxlength="10" id="id_house"> -->
+                          </div>
+                          <div class="col-auto">
+                            <label for="{{form.corps.id_for_label}}" class="col-form-label">Корпус</label>
+                            {{form.corps}}
+                            <!-- <input type="text" class="form-control" name="corps" maxlength="5" id="id_corps"> -->
+                          </div>
+                          <div class="col-auto">
+                            <label for="{{form.apartment.id_for_label}}" class="col-form-label">Квартира</label>
+                            <!-- <input type="text" class="form-control" name="apartment" maxlength="10" id="id_apartment"> -->
+                            {{form.apartment}} 
+                          </div>
                         </div>
                         <!-- {{ form.as_p }} -->
                         <button type="submit" class="btn btn-primary btn-users">Добавить</button>
@@ -119,6 +155,29 @@
   <!-- MDB core JavaScript -->
   <script type="text/javascript" src="{% static 'js/mdb.min.js' %}"></script>
   <!-- Your custom scripts (optional) -->
-  <script type="text/javascript"></script>
+  <script>
+    var user_data_date_of_birth = '{{ formatted_date }}';
+    console.log(user_data_date_of_birth)
+
+    var date_components = user_data_date_of_birth.split('-');
+    console.log(date_components)
+
+    var formatted_date_of_birth = date_components[1] + '.' + date_components[2] + '.' + date_components[0];
+    console.log(formatted_date_of_birth)
+
+    var date = new Date(Date.UTC(date_components[0], date_components[1] - 1, date_components[2]));
+    console.log(date)
+
+    document.getElementById('id_date_of_birth').valueAsDate = date;
+
+    window.onload = function() {
+      setTimeout(function() {
+          let inputdb = document.getElementById('id_date_of_birth');
+          inputdb.style.setProperty('color', '#000000c4', 'important');
+      }, 100);
+    };
+
+  </script>
+
 </body>
 </html>

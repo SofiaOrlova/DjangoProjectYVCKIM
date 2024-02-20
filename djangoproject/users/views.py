@@ -18,11 +18,20 @@ from datetime import datetime
 import json
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from docxtpl import DocxTemplate
+from django.http import FileResponse
+from io import BytesIO
+import io
+from docx import Document
+import os
+from docx.shared import Pt
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 from .models import Instructor
-from .models import Appointment, Instructor, Notation, UserData
+from .models import Appointment, Instructor, Notation, UserData, UserGroups
 from .forms import AppointmentForm
 from django.shortcuts import get_object_or_404
+
 
 
 User = get_user_model()
@@ -191,9 +200,6 @@ def appointment(request, idInstructor):
     return render(request, 'student_pickDataTime.html', {'form': form})
 
 
-# def success_url(request):
-#     return render(request, 'success_url.html')
-
 
 def get_available_times(request):
     selected_date = request.GET.get("date")
@@ -232,7 +238,6 @@ def schedule(request):
 
     
 def teacher_dashboard(request):
-    # instructor_id = request.user.instructor.id  # Получаем id текущего инструктора
     user_id = request.user.id 
     instructor = Instructor.objects.get(user_id=user_id)
     instructor_id = instructor.id
@@ -339,8 +344,21 @@ def manager_dashboard(request):
 
 @require_POST
 def confirm_users(request):
-    user_ids = request.POST.getlist('user_ids')  # Получаем список выбранных пользователей
-    User.objects.filter(id__in=user_ids).update(email_verify=1)  # Обновляем поле email_verify для выбранных пользователей
+    user_ids = request.POST.getlist('user_ids')  
+    users = User.objects.filter(id__in=user_ids)
+
+    # Получаем список id пользователей до обновления
+    user_ids_before_update = list(users.values_list('id', flat=True))
+
+    # Обновляем email_verify для выбранных пользователей
+    users.update(email_verify=1)  
+
+    # Создаем записи в модели UserGroups
+    user_groups_to_create = [
+        UserGroups(user_id=user, group_id=2)
+        for user in users
+    ]
+    UserGroups.objects.bulk_create(user_groups_to_create)
 
     response_data = {'reload_page': True}
     return JsonResponse(response_data)
@@ -351,24 +369,11 @@ def manager_add_users_data(request):
     return render(request, 'manager_add_users_data.html', {'users': users})
 
 
-# def add_user_data(request, user_id):
-#     user = User.objects.get(id=user_id)
-
-#     if request.method == 'POST':
-#         form = UserDataForm(request.POST)
-#         if form.is_valid():
-#             user_data = form.save(commit=False)
-#             user_data.user = user
-#             user_data.save()
-#             return redirect('manager_add_users_data')
-#     else:
-#         form = UserDataForm()
-
-#     return render(request, 'add_user_data.html', {'user': user, 'form': form})
-
 def add_user_data(request, user_id):
     user = User.objects.get(id=user_id)
     user_data, created = UserData.objects.get_or_create(user=user)
+
+    formatted_date = user_data.date_of_birth.strftime('%Y-%m-%d') if user_data.date_of_birth else None
 
     if request.method == 'POST':
         form = UserDataForm(request.POST, instance=user_data)
@@ -378,5 +383,281 @@ def add_user_data(request, user_id):
     else:
         form = UserDataForm(instance=user_data)
 
-    return render(request, 'add_user_data.html', {'user': user, 'form': form})
+    return render(request, 'add_user_data.html', {'user': user, 'form': form, 'formatted_date': formatted_date})
 
+
+def payments(request):
+    # users = User.objects.filter(email_verify=0) 
+    return render(request, 'student_payments.html')
+
+def profile(request):
+    return render(request, 'student_profile.html')
+
+
+def generate_group_journal(request):
+    if request.method == 'POST':
+        group_number = request.POST.get('group_number')
+        
+        # Получение всех данных пользователей из модели UserData по указанной группе
+        user_data_list = UserData.objects.filter(group_number=group_number)
+
+        if user_data_list:
+            # Путь к пустому шаблону документа
+            template_path = "group_journal.docx"
+
+            # Создаем новый документ на основе пустого шаблона
+            doc = Document(template_path)
+
+            # Функция для установки шрифта и размера текста в ячейке
+            def set_font_and_size(cell):
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.name = 'Arial CYR'
+                        run.font.size = Pt(10)
+                        paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                        paragraph.paragraph_format.space_after = Pt(0)
+            def set_font_and_size_without_center(cell):
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.name = 'Arial CYR'
+                        run.font.size = Pt(10)
+                        paragraph.paragraph_format.space_after = Pt(0)
+            
+            # Заполняем таблицу данными из базы данных
+            for i, user_data in enumerate(user_data_list):
+                user = user_data.user
+                context = {
+                    'last_name': user.last_name if user.last_name else '',
+                    'first_name': user.first_name if user.first_name else '',
+                    'surname': user.surname if user.surname else '',
+                    'date_of_birth': user_data.date_of_birth.strftime('%d.%m.%Y') if user_data.date_of_birth else '',
+                    'region': user_data.region if user_data.region else '',
+                    'city_or_village': user_data.city_or_village if user_data.city_or_village else '',
+                    'street': user_data.street if user_data.street else '',
+                    'house': user_data.house if user_data.house else '',
+                    'corps': user_data.corps if user_data.corps else '',
+                    'apartment': user_data.apartment if user_data.apartment else '',
+                }
+                
+                # Записываем данные в существующие строки таблицы
+                row = doc.tables[0].rows[i + 1].cells  # Индекс строки в таблице начинается с 1, а не с 0
+                # row[0].text = str(i + 1)  # Номер строки
+                row[1].text = context['last_name']  
+                set_font_and_size(row[1])
+                row[2].text = context['first_name']  
+                set_font_and_size(row[2])
+                row[3].text = context['surname']  
+                set_font_and_size(row[3])
+                row[4].text = context['date_of_birth']  
+                set_font_and_size(row[4])
+
+                row_table2 = doc.tables[1].rows[i + 2].cells
+                row_table2[0].text = context['region']
+                set_font_and_size(row_table2[0])
+                row_table2[1].text = context['city_or_village'] 
+                set_font_and_size(row_table2[1])   
+                row_table2[2].text = context['street']
+                set_font_and_size(row_table2[2])
+                row_table2[3].text = context['house'] 
+                set_font_and_size(row_table2[3])
+                row_table2[4].text = context['corps']  
+                set_font_and_size(row_table2[4])
+                row_table2[5].text = context['apartment']
+                set_font_and_size(row_table2[5])
+
+                row_table3 = doc.tables[2].rows[i+3].cells
+                if(i>0):
+                    row_table3 = doc.tables[2].rows[i+2].cells
+                    row_table3[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table3[0-i])
+                else:
+                    row_table3[0].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table3[0])
+
+                row_table4 = doc.tables[4].rows[i+3].cells
+                if(i>0):
+                    row_table4 = doc.tables[4].rows[i+2].cells
+                    row_table4[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table4[0-i])
+                else:
+                    row_table4[0].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table4[0])
+
+                row_table5 = doc.tables[6].rows[i+3].cells
+                row_table5[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table5[1])
+
+                row_table6 = doc.tables[8].rows[i+3].cells
+                row_table6[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table6[1])
+
+                # row_table7 = doc.tables[10].rows[i+3].cells
+                # row_table7[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                # set_font_and_size_without_center(row_table7[1])
+                
+                if(i>0):
+                    row_table7 = doc.tables[10].rows[i+2].cells
+                    row_table7[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table7[0-i])
+                else:
+                    row_table7 = doc.tables[10].rows[i+3].cells
+                    row_table7[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table7[0-i])
+
+                # row_table8 = doc.tables[12].rows[i+3].cells
+                # row_table8[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                # set_font_and_size_without_center(row_table8[1])
+                if(i>0):
+                    row_table8 = doc.tables[12].rows[i+2].cells
+                    row_table8[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table8[0-i])
+                else:
+                    row_table8 = doc.tables[12].rows[i+3].cells
+                    row_table8[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table8[0-i])
+
+                # # row_table9 = doc.tables[14].rows[i+3].cells
+                # # row_table9[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                # # set_font_and_size_without_center(row_table9[1])
+                if(i>0):
+                    row_table9 = doc.tables[14].rows[i+2].cells
+                    row_table9[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table9[0-i])
+                else:
+                    row_table9 = doc.tables[14].rows[i+3].cells
+                    row_table9[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table9[0-i])
+
+                # # row_table10 = doc.tables[16].rows[i+3].cells
+                # # row_table10[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                # # set_font_and_size_without_center(row_table10[1])
+                if(i>0):
+                    row_table10 = doc.tables[16].rows[i+2].cells
+                    row_table10[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table10[0-i])
+                else:
+                    row_table10 = doc.tables[16].rows[i+3].cells
+                    row_table10[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table10[0-i])
+
+                # # row_table11 = doc.tables[18].rows[i+3].cells
+                # # row_table11[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                # # set_font_and_size_without_center(row_table11[1])
+                if(i>0):
+                    row_table11 = doc.tables[18].rows[i+2].cells
+                    row_table11[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table11[0-i])
+                else:
+                    row_table11 = doc.tables[18].rows[i+3].cells
+                    row_table11[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                    set_font_and_size_without_center(row_table11[0-i])
+
+                row_table12 = doc.tables[20].rows[i+1].cells
+                row_table12[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table12[1])
+            
+            for p in doc.paragraphs:
+                if "{{group_number}}" in p.text:
+                    p.text = p.text.replace("{{group_number}}", group_number)
+                    for run in p.runs:
+                        run.font.name = 'Times New Roman'
+                        run.font.bold = True
+                        run.font.size = Pt(36)
+                    break 
+
+            
+            output_path = "filled_group_journal.docx"
+            doc.save(output_path)
+
+            # Отправляем заполненный документ в ответе на запрос
+            with open(output_path, 'rb') as docx_file:
+                response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                response['Content-Disposition'] = f'attachment; filename=filled_group_journal.docx'
+                return response
+                
+        else:
+            return HttpResponse("Пользователи с указанной группой не найдены")
+
+    return render(request, 'manager_documents.html')
+
+def manager_document_dogovor(request):
+    users = User.objects.filter(email_verify=1) & User.objects.filter(usergroups__group_id=2)
+    return render(request, 'manager_document_dogovor.html', {'users': users})
+
+def generate_docx(user):
+    # Загрузка шаблона docx документа
+    doc = Document('dogovor_ob_obych_В.docx')
+
+    user_data = user.userdata
+    
+    # Заполнение меток данными ученика
+    for paragraph in doc.paragraphs:
+        if "{{last_name}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{last_name}}", user.last_name)
+        if "{{first_name}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{first_name}}", user.first_name)
+        if "{{surname}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{surname}}", user.surname)
+        if "{{date_of_birth}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{date_of_birth}}", str(user_data.date_of_birth.day))
+        if "{{month_of_birth}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{month_of_birth}}", str(user_data.date_of_birth.month))
+        if "{{year_of_birth}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{year_of_birth}}", str(user_data.date_of_birth.year))
+        if "{{place_of_birth}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{place_of_birth}}", str(user_data.place_of_birth))
+        if "{{passport_series}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{passport_series}}", str(user_data.passport_series))
+        if "{{passport_number}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{passport_number}}", str(user_data.passport_number))
+    
+    # Создание временного буфера для сохранения документа
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    
+    return buffer
+
+def user_dogovor(request, user_id):
+    print(user_id)
+    user = get_object_or_404(User, id=user_id)
+    
+    # Создание и заполнение docx документа
+    docx_buffer = generate_docx(user)
+    
+    # Отправка документа пользователю для скачивания
+    response = HttpResponse(docx_buffer.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    response['Content-Disposition'] = 'attachment; filename="document.docx"'
+    
+    return response
+
+# def user_dogovor(request, user_id):
+#     if request.method == 'POST':
+#         # Обработка POST-запроса для генерации и отправки документа
+#         user_id = request.POST.get('user_id')
+#         if user_id:
+#             try:
+#                 user = User.objects.get(id=user_id)
+#                 doc = Document('dogovor_ob_obych_В.docx')
+
+#                 # Заполнение меток в документе
+#                 for paragraph in doc.paragraphs:
+#                     if 'last_name' in paragraph.text:
+#                         paragraph.text = paragraph.text.replace('last_name', user.last_name)
+#                     if 'first_name' in paragraph.text:
+#                         paragraph.text = paragraph.text.replace('first_name', user.first_name)
+#                     if 'surname' in paragraph.text:
+#                         paragraph.text = paragraph.text.replace('surname', user.surname)
+
+#                 # Генерация HTTP-ответа с содержимым документа
+#                 response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+#                 response['Content-Disposition'] = 'attachment; filename="договор_об_обучении.docx"'
+#                 doc.save(response)
+#                 return response
+#             except User.DoesNotExist:
+#                 return JsonResponse({'error': 'Пользователь с указанным ID не найден'}, status=404)
+#         else:
+#             return JsonResponse({'error': 'Не указан ID пользователя'}, status=400)
+#     else:
+#         # Если запрос не POST, вернуть ошибку метода неразрешенного доступа
+#         return JsonResponse({'error': 'Метод не разрешен'}, status=405)

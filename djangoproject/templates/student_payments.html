@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content%}
+    {% load static %}
+    <div class="container">
+        <div>
+            <h4 class="title-client title-pick"></h4>
+
+            <div class="headline">
+                <div class="title-client headline">Информация о совершенных платежах</div>
+            </div>
+            
+            <div class="frame">
+                <div>
+                    <div class="table-pay">
+                    <div class="pay-info">
+                        <div class="pay-now">Текущая оплата обучения составляет: <span>10 000</span> р.</div>
+                        <div class="pay-balance">Осталось оплатить: <span>20 000</span> р.</div>
+                        </div>
+                        <div class="circle-big">
+                            <div class="text">
+                                33<div class="small">%</div>
+                            </div>
+                            <svg>
+                                <circle class="bg" cx="57" cy="57" r="52"></circle>
+                                <circle class="progress" cx="57" cy="57" r="52"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                   
+                </div>
+            </div>
+
+
+            <div class="text-pay">История платежей</div>
+                <table class="table table-history">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Платеж</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>12.12.2023</td>
+                        <td>5 000</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>12.01.2024</td>
+                        <td>5 000</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+
+
+
+            
+    
+        </div>
+
+        
+    
+        
+    </div>
+
+
+{% endblock %}
