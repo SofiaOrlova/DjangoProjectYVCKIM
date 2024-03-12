@@ -11,6 +11,7 @@ class User(AbstractUser):
 
     email_verify = models.BooleanField(default=False)
     surname = models.CharField(max_length=255, blank=True, null=True)
+    phone = models.CharField(max_length=255, blank=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -56,6 +57,7 @@ class UserData(models.Model):
     corps = models.CharField(max_length=5, null=True)
     apartment = models.CharField(max_length=10, null=True)
     place_of_birth= models.CharField(max_length=70, null=True)
+    passport_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username

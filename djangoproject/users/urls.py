@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from users.views import Register, EmailVerify, MyLoginView,indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data, payments, profile, generate_group_journal, manager_document_dogovor, user_dogovor
+from users.views import Register, EmailVerify, MyLoginView, indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data, payments, profile, generate_group_journal, manager_document_dogovor, user_dogovor, generate_hour_group, kniga_vojden_users, kniga_vojden
 from . import views
 
 urlpatterns = [
@@ -27,6 +27,10 @@ urlpatterns = [
     
     path('register/', Register.as_view(), name='register'),
 
+    # path('reset/done/', reset_done, name='reset_done'),
+    # path('reset/done/', PasswordResetView.as_view(), name='reset_password'),
+    # path('accounts/login/', MyLoginView.as_view(), name='login'),
+
     path('user_profile/', user_profile, name='user_profile'),
     path('user_profile/teacher_dashboard/', teacher_dashboard),
     path('user_profile/teacher_notation/', teacher_notation),
@@ -47,8 +51,10 @@ urlpatterns = [
     path('user_profile/manager_document_dogovor/', manager_document_dogovor, name='manager_document_dogovor'),
     path('user_profile/manager_document_dogovor/user_dogovor/<int:user_id>/', user_dogovor, name='user_dogovor'),
     path('user_profile/manager_document_group/', TemplateView.as_view(template_name='manager_document_group.html'), name='manager_document_group'),
-    path('user_profile/manager_document_kniga_vojden/', TemplateView.as_view(template_name='manager_document_kniga_vojden.html'), name='manager_document_kniga_vojden'),
+    path('user_profile/manager_document_kniga_vojden/', kniga_vojden, name='kniga_vojden'),
     path('user_profile/manager_document_instructor/', TemplateView.as_view(template_name='manager_document_instructor.html'), name='manager_document_instructor'),
     path('get_available_times/', views.get_available_times, name='get_available_times'),
     path('user_profile/manager_documents/generate_group_journal', views.generate_group_journal, name='generate_group_journal'),
+    path('user_profile/manager_documents/generate_hour_group', views.generate_hour_group, name='generate_hour_group'),
+    path('user_profile/manager_document_kniga_vojden/kniga_vojden_users', kniga_vojden_users, name='kniga_vojden_users'),
 ]

@@ -86,6 +86,11 @@
                             {{form.passport_number.errors}}
                         </div>
                         <div class="input-add-data">
+                          <label class="form-label" for="{{form.passport_date.id_for_label}}">Дата выдачи паспорта</label>
+                          {{form.passport_date}}
+                          {{form.passport_date.errors}}
+                        </div>
+                        <div class="input-add-data">
                             <label class="form-label" for="{{form.group_number.id_for_label}}">Номер группы</label>
                             {{form.group_number}}
                             {{form.group_number.errors}}

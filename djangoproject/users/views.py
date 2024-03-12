@@ -26,9 +26,12 @@ from docx import Document
 import os
 from docx.shared import Pt
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from django.contrib.auth.models import Group
+from django.contrib.auth import get_user_model
+from django.utils.http import quote
 
 from .models import Instructor
-from .models import Appointment, Instructor, Notation, UserData, UserGroups
+from .models import Appointment, Instructor, Notation, UserData
 from .forms import AppointmentForm
 from django.shortcuts import get_object_or_404
 
@@ -98,10 +101,13 @@ class Register(View):
         }
         return render(request, self.template_name, context)
     
+# class PasswordResetView(View):
+#     def get(self):
+#         return redirect('login')
+    
 
 def user_profile(request):
     if request.user.is_authenticated:
-        # Проверьте принадлежность пользователя к группам и перенаправьте на соответствующую страницу
         if request.user.groups.filter(name='Преподаватель').exists():
             return redirect('teacher_dashboard/')
         elif request.user.groups.filter(name='Ученик').exists():
@@ -139,6 +145,9 @@ def student_pickDataTime(request):
         'items':items
     }
     return render(request, "student_pickDataTime.html", context)
+
+# def reset_done(request):
+#     return redirect('login')
 
 #Это робит--------------------
 def indexInstructor(request, idInstructor):
@@ -347,18 +356,14 @@ def confirm_users(request):
     user_ids = request.POST.getlist('user_ids')  
     users = User.objects.filter(id__in=user_ids)
 
-    # Получаем список id пользователей до обновления
     user_ids_before_update = list(users.values_list('id', flat=True))
 
-    # Обновляем email_verify для выбранных пользователей
     users.update(email_verify=1)  
 
-    # Создаем записи в модели UserGroups
-    user_groups_to_create = [
-        UserGroups(user_id=user, group_id=2)
-        for user in users
-    ]
-    UserGroups.objects.bulk_create(user_groups_to_create)
+    # Присвоение группы с group_id = 2
+    group = Group.objects.get(id=2)  # Получаем группу с id = 2
+    for user in users:
+        user.groups.add(group)  # Добавляем пользователя в группу
 
     response_data = {'reload_page': True}
     return JsonResponse(response_data)
@@ -581,7 +586,9 @@ def generate_group_journal(request):
     return render(request, 'manager_documents.html')
 
 def manager_document_dogovor(request):
-    users = User.objects.filter(email_verify=1) & User.objects.filter(usergroups__group_id=2)
+    # users = User.objects.filter(email_verify=1) & User.objects.filter(Group.objects.get(id=2))
+    group = Group.objects.get(id=2)
+    users = User.objects.filter(email_verify=True, groups=group)
     return render(request, 'manager_document_dogovor.html', {'users': users})
 
 def generate_docx(user):
@@ -610,6 +617,14 @@ def generate_docx(user):
             paragraph.text = paragraph.text.replace("{{passport_series}}", str(user_data.passport_series))
         if "{{passport_number}}" in paragraph.text:
             paragraph.text = paragraph.text.replace("{{passport_number}}", str(user_data.passport_number))
+        if "{{passport_day}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{passport_day}}", str(user_data.passport_date.day))
+        if "{{passport_month}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{passport_month}}", str(user_data.passport_date.month))
+        if "{{passport_year}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{passport_year}}", str(user_data.passport_date.year))
+        if "{{phone}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{phone}}", str(user.phone))
     
     # Создание временного буфера для сохранения документа
     buffer = io.BytesIO()
@@ -661,3 +676,168 @@ def user_dogovor(request, user_id):
 #     else:
 #         # Если запрос не POST, вернуть ошибку метода неразрешенного доступа
 #         return JsonResponse({'error': 'Метод не разрешен'}, status=405)
+def generate_hour_group(request):
+    if request.method == 'POST':
+        group_number = request.POST.get('group_number')
+        
+        # Получение всех данных пользователей из модели UserData по указанной группе
+        user_data_list = UserData.objects.filter(group_number=group_number)
+
+        def set_font(cell):
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(8)
+
+        if user_data_list:
+            # Путь к пустому шаблону документа
+            template_path = "накопительная_ведомость.docx"
+
+            # Создаем новый документ на основе пустого шаблона
+            doc = Document(template_path)
+
+            for paragraph in doc.paragraphs:
+                if "{{group_number}}" in paragraph.text:
+                    paragraph.text = paragraph.text.replace("{{group_number}}", group_number)
+
+            
+            # Заполняем таблицу данными из базы данных
+            for i, user_data in enumerate(user_data_list):
+                user = user_data.user
+                
+                context = {
+                    'last_name': user.last_name if user.last_name else '',
+                    'first_name': user.first_name if user.first_name else '',
+                    'surname': user.surname if user.surname else '',
+                }
+
+                row = doc.tables[0].rows[i+1].cells  
+                row[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+
+                # Получаем все записи, связанные с пользователем как студентом
+                student_appointments = Appointment.objects.filter(student=user)
+                appointment_month = [str(appointment.date.month) for appointment in student_appointments]
+                appointment_day = [str(appointment.date.day) for appointment in student_appointments]
+                
+                # Преобразуем массив дат в строку, разделенную запятыми
+                appointment_dates_str = ', '.join(appointment_month)
+                # appointment_days = ', '.join(appointment_day)
+                
+                # Устанавливаем строку дат в соответствующую ячейку таблицы для текущего студента
+                if appointment_dates_str:
+                    # Заполняем каждую ячейку таблицы соответствующей датой из массива дат
+                    for j, date in enumerate(appointment_month, start=2):
+                        if j < 22: 
+                            # print(appointment_day[j-2]) # Заполняем только первые 20 ячеек
+                            if date < '10':
+                                row[j].text = appointment_day[j-2] + '.' + '0' + date
+                                set_font(row[j])
+                            else:
+                                row[j].text = appointment_day[j-2] + '.' + date 
+                                set_font(row[j])
+                        if j >= 22 and j < 30: 
+                            if date < '10':
+                                row_table2 = doc.tables[1].rows[i+1].cells
+                                row_table2[j-20].text = appointment_day[j-2] + '.' + '0' + date
+                                set_font(row_table2[j-20])
+                            else:
+                                row_table2 = doc.tables[1].rows[i+1].cells
+                                row_table2[j-20].text = appointment_day[j-2] + '.' + date 
+                                set_font(row_table2[j-20])
+                            
+
+
+
+                row_table2 = doc.tables[1].rows[i+1].cells  
+                row_table2[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+
+
+            
+            output_path = "накопительная_ведомостьfill.docx"
+            doc.save(output_path)
+
+            with open(output_path, 'rb') as docx_file:
+                response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+                new_filename = 'накопительная_ведомостьfill.docx'
+                response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
+                return response
+                
+        else:
+            return HttpResponse("Пользователи с указанной группой не найдены")
+
+    return render(request, 'manager_document_group.html')
+
+
+@require_POST
+def kniga_vojden_users(request):
+    user_id = request.POST.get('user_id')  
+    # user = User.objects.filter(id__in=user_id)
+    user = User.objects.get(id=user_id)
+
+    instructor_id = request.POST.get('instructor_id')  
+    instructor = Instructor.objects.get(id__in=instructor_id)
+
+    print(user)
+    print(instructor)
+
+    if instructor_id:
+
+        if (instructor_id == '1') : 
+            template_path = "книжка вождения Орлова.docx"
+            
+        if (instructor_id == '2') : 
+            template_path = "книжка вождения Кузьмичев.docx"
+
+        if (instructor_id == '3') : 
+            template_path = "книжка вождения Русаков.docx"
+
+        if (instructor_id == '4') : 
+            template_path = "книжка вождения Алиференко.docx"
+        
+        doc = Document(template_path)
+
+        context = {
+                    'last_name': user.last_name if user.last_name else '',
+                    'first_name': user.first_name if user.first_name else '',
+                    'surname': user.surname if user.surname else '',
+                }
+        
+        for paragraph in doc.paragraphs:
+            if "{{last_name}}" in paragraph.text:
+                paragraph.text = paragraph.text.replace("{{last_name}}", context['last_name'])                  
+                for run in paragraph.runs:
+                    run.font.name = 'Times New Roman'  
+                    run.font.size = Pt(16)      
+                    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  
+            if "{{first_name}}" in paragraph.text:
+                paragraph.text = paragraph.text.replace("{{first_name}}", context['first_name'])                
+                for run in paragraph.runs:
+                    run.font.name = 'Times New Roman'  
+                    run.font.size = Pt(16) 
+                    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            if "{{surname}}" in paragraph.text:
+                paragraph.text = paragraph.text.replace("{{surname}}", context['surname'])                
+                for run in paragraph.runs:
+                    run.font.name = 'Times New Roman'  
+                    run.font.size = Pt(16) 
+                    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        
+        
+        output_path = "книжка вождения " + user.last_name + user.first_name + ".docx"
+        doc.save(output_path)
+
+        with open(output_path, 'rb') as docx_file:
+            response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+            new_filename = "книжка вождения Орлова " + user.last_name + ".docx"
+            response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
+            return response
+        
+    return render(request, 'manager_document_kniga_vojden.html')
+
+def kniga_vojden(request):
+    group = Group.objects.get(id=2)
+    users = User.objects.filter(email_verify=True, groups=group) 
+    instructors = Instructor.objects.all()
+
+    context = {'users': users, 'instructors': instructors}
+    
+    return render(request, 'manager_document_kniga_vojden.html', context)

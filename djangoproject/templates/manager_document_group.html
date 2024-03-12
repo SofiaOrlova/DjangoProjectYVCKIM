@@ -82,20 +82,34 @@
           </h4>
           <p>Для автоматического заполнения документа "Ведомость учета учебных часов группы", необходимо ввести номер группы</p>
           
-          <div class="data">
+          <!-- <div class="data">
             <div class="mb-3">
                 <label for="GroupInput" class="form-label">Номер группы</label>
                 <input type="text" class="form-control" id="GroupInput">
             </div>
-         </div>
+         </div> -->
+         <div class="data">
+          <form id="hourForm" method="POST" action="{% url 'generate_hour_group' %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                  <label for="GroupInput" class="form-label">Номер группы</label>
+                  <input type="text" class="form-control" id="GroupInput" name="group_number">
+              </div>
+          </form>
+        </div>
        
-          <a class="btn btn-primary btn-users" href="#">Заполнить и скачать документ</a>
+          <a class="btn btn-primary btn-users" onclick="submitForm()">Заполнить и скачать документ</a>
         </div>
       </div>
     </div>
   </main>
   
 
+  <script>
+    function submitForm() {
+        document.getElementById("hourForm").submit();
+    }
+  </script>
   <!-- jQuery -->
   <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
   <!-- Bootstrap tooltips -->

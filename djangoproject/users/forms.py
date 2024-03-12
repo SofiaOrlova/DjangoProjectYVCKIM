@@ -54,10 +54,11 @@ class UserCreationForm(DjangoUserCreationForm):
     surname = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
     # username = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
     email = forms.CharField(widget=forms.EmailInput(attrs={ 'class': 'form-control' }))
+    phone = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
         
     class Meta(DjangoUserCreationForm.Meta):
         model = User
-        fields = ("first_name", "last_name", "surname", "email")
+        fields = ("first_name", "last_name", "surname", "email", "phone")
 
 
 available_times = [
@@ -86,9 +87,10 @@ class AppointmentForm(forms.ModelForm):
 class UserDataForm(forms.ModelForm):
     class Meta:
         model = UserData
-        fields = ['passport_series', 'passport_number', 'group_number', 'date_of_birth', 'region', 'city_or_village', 'street', 'house', 'corps', 'apartment', 'place_of_birth']
+        fields = ['passport_series', 'passport_number', 'group_number', 'date_of_birth', 'region', 'city_or_village', 'street', 'house', 'corps', 'apartment', 'place_of_birth', 'passport_date']
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'passport_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
