@@ -83,54 +83,49 @@
           <p>Для автоматического заполнения документа "Табель учета рабочего времени мастера ПОВА", необходимо выбрать инструктора</p>
           
           <h4>Инструктор</h4>
-         <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Имя</th>
-                <th scope="col">Фамилия</th>
-                <th scope="col">Отчество</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">1</th>
-                <td>Иван</td>
-                <td>Иванов</td>
-                <td>Иванович</td>
-                <td>
-                    <div class="form-check">
-                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">2</th>
-                <td>Иван</td>
-                <td>Иванов</td>
-                <td>Иванович</td>
-                <td>
-                    <div class="form-check">
-                    <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">3</th>
-                <td>Иван</td>
-                <td>Иванов</td>
-                <td>Иванович</td>
-                <td>
-                  <div class="form-check">
-                    <input class="form-check-input form-check-reg" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <form id="confirmation-form" method="post" action="{% url 'instructor_lessons' %}">
+            {% csrf_token %}
+            <table class="table">
+                <thead>
+                  <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Имя</th>
+                      <th scope="col">Фамилия</th>
+                      <th scope="col">Отчество</th>
+                      <th scope="col">Выбрать</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for instructor in instructors %}
+                      <tr>
+                          <th scope="row">{{ forloop.counter }}</th>
+                          <td>{{ instructor.name }}</td>
+                          <td>{{ instructor.second_name }}</td>
+                          <td>{{ instructor.surname }}</td>
+                          <td>
+                              <!-- <div class="form-check">
+                                <input class="form-check-input form-check-reg" type="radio" name="user_ids" value="{{ user.id }}">
+                              </div> -->
+                              <div class="form-check">
+                                  <input class="form-check-input instructor-input" type="checkbox" name="instructor_id" value="{{ instructor.id }}">
+                              </div>
+                          </td>
+                      </tr>
+                  {% endfor %}
+              </tbody>
+            </table>
+
+            <div class="mb-3">
+              <label for="GroupInput" class="form-label">Введите номер месяца</label>
+              <input type="text" class="form-control" id="month_number" name="month_number">
+            </div>
+            
+            <!-- <button type="submit" class="btn btn-primary btn-users">Подтвердить</button> -->
+            <button type="submit" class="btn btn-primary btn-users">Заполнить и скачать документ</button>
+        </form>
        
-          <a class="btn btn-primary btn-users" href="#">Заполнить и скачать документ</a>
+       
+       
         </div>
       </div>
     </div>

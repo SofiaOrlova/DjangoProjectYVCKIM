@@ -29,6 +29,9 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from django.utils.http import quote
+from django.db.models import Q
+from django.db.models import Count
+import calendar
 
 from .models import Instructor
 from .models import Appointment, Instructor, Notation, UserData
@@ -353,8 +356,9 @@ def manager_dashboard(request):
 
 @require_POST
 def confirm_users(request):
-    user_ids = request.POST.getlist('user_ids')  
+    user_ids = request.POST.getlist('user_id')  
     users = User.objects.filter(id__in=user_ids)
+    print(users)
 
     user_ids_before_update = list(users.values_list('id', flat=True))
 
@@ -427,8 +431,28 @@ def generate_group_journal(request):
                         run.font.name = 'Arial CYR'
                         run.font.size = Pt(10)
                         paragraph.paragraph_format.space_after = Pt(0)
+
+            row_table_indices = [0, 1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+            for idx in row_table_indices:
+                row_table = doc.tables[idx]
+                num_needed_rows = len(user_data_list)
+                num_existing_rows = len(row_table.rows)
+                if (idx == 2) or (idx == 4) or (idx == 6) or (idx == 8) or (idx == 10) or (idx == 12) or (idx == 14) or (idx == 16) or (idx == 18):
+                    if num_existing_rows < num_needed_rows + 3:  
+                        num_rows_to_add = num_needed_rows - num_existing_rows + 3
+                        for _ in range(num_rows_to_add):
+                            row_table.add_row()
+                if (idx == 1):
+                    if num_existing_rows < num_needed_rows + 2:  
+                        num_rows_to_add = num_needed_rows - num_existing_rows + 2
+                        for _ in range(num_rows_to_add):
+                            row_table.add_row()
+                if (idx == 0) or (idx == 20):
+                    if num_existing_rows < num_needed_rows + 1:  
+                        num_rows_to_add = num_needed_rows - num_existing_rows + 1
+                        for _ in range(num_rows_to_add):
+                            row_table.add_row()
             
-            # Заполняем таблицу данными из базы данных
             for i, user_data in enumerate(user_data_list):
                 user = user_data.user
                 context = {
@@ -444,9 +468,8 @@ def generate_group_journal(request):
                     'apartment': user_data.apartment if user_data.apartment else '',
                 }
                 
-                # Записываем данные в существующие строки таблицы
-                row = doc.tables[0].rows[i + 1].cells  # Индекс строки в таблице начинается с 1, а не с 0
-                # row[0].text = str(i + 1)  # Номер строки
+                row = doc.tables[0].rows[i + 1].cells  
+                row[0].text = str(i + 1)  
                 row[1].text = context['last_name']  
                 set_font_and_size(row[1])
                 row[2].text = context['first_name']  
@@ -471,93 +494,64 @@ def generate_group_journal(request):
                 set_font_and_size(row_table2[5])
 
                 row_table3 = doc.tables[2].rows[i+3].cells
-                if(i>0):
-                    row_table3 = doc.tables[2].rows[i+2].cells
-                    row_table3[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table3[0-i])
-                else:
-                    row_table3[0].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table3[0])
+                row_table3[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table3[0])
+                # row_table3 = doc.tables[2].rows[i+3].cells
+                row_table3[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table3[1])
 
                 row_table4 = doc.tables[4].rows[i+3].cells
-                if(i>0):
-                    row_table4 = doc.tables[4].rows[i+2].cells
-                    row_table4[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table4[0-i])
-                else:
-                    row_table4[0].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table4[0])
+                row_table4[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table4[0])
+                # row_table3 = doc.tables[2].rows[i+3].cells
+                row_table4[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table4[1])
 
                 row_table5 = doc.tables[6].rows[i+3].cells
+                row_table5[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table5[0])
                 row_table5[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
                 set_font_and_size_without_center(row_table5[1])
 
                 row_table6 = doc.tables[8].rows[i+3].cells
+                row_table6[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table6[0])
                 row_table6[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
                 set_font_and_size_without_center(row_table6[1])
 
-                # row_table7 = doc.tables[10].rows[i+3].cells
-                # row_table7[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                # set_font_and_size_without_center(row_table7[1])
-                
-                if(i>0):
-                    row_table7 = doc.tables[10].rows[i+2].cells
-                    row_table7[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table7[0-i])
-                else:
-                    row_table7 = doc.tables[10].rows[i+3].cells
-                    row_table7[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table7[0-i])
+                row_table7 = doc.tables[10].rows[i+3].cells
+                row_table7[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table7[0])
+                row_table7[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table7[1])
 
-                # row_table8 = doc.tables[12].rows[i+3].cells
-                # row_table8[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                # set_font_and_size_without_center(row_table8[1])
-                if(i>0):
-                    row_table8 = doc.tables[12].rows[i+2].cells
-                    row_table8[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table8[0-i])
-                else:
-                    row_table8 = doc.tables[12].rows[i+3].cells
-                    row_table8[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table8[0-i])
+                row_table8 = doc.tables[12].rows[i+3].cells
+                row_table8[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table8[0])
+                row_table8[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table8[1])
 
-                # # row_table9 = doc.tables[14].rows[i+3].cells
-                # # row_table9[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                # # set_font_and_size_without_center(row_table9[1])
-                if(i>0):
-                    row_table9 = doc.tables[14].rows[i+2].cells
-                    row_table9[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table9[0-i])
-                else:
-                    row_table9 = doc.tables[14].rows[i+3].cells
-                    row_table9[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table9[0-i])
+                row_table9 = doc.tables[14].rows[i+3].cells
+                row_table9[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table9[0])
+                row_table9[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table9[1])
 
-                # # row_table10 = doc.tables[16].rows[i+3].cells
-                # # row_table10[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                # # set_font_and_size_without_center(row_table10[1])
-                if(i>0):
-                    row_table10 = doc.tables[16].rows[i+2].cells
-                    row_table10[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table10[0-i])
-                else:
-                    row_table10 = doc.tables[16].rows[i+3].cells
-                    row_table10[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table10[0-i])
+                row_table10 = doc.tables[16].rows[i+3].cells
+                row_table10[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table10[0])
+                row_table10[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table10[1])
 
-                # # row_table11 = doc.tables[18].rows[i+3].cells
-                # # row_table11[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                # # set_font_and_size_without_center(row_table11[1])
-                if(i>0):
-                    row_table11 = doc.tables[18].rows[i+2].cells
-                    row_table11[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table11[0-i])
-                else:
-                    row_table11 = doc.tables[18].rows[i+3].cells
-                    row_table11[0-i].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
-                    set_font_and_size_without_center(row_table11[0-i])
+                row_table11 = doc.tables[18].rows[i+3].cells
+                row_table11[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table11[0])
+                row_table11[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
+                set_font_and_size_without_center(row_table11[1])
 
                 row_table12 = doc.tables[20].rows[i+1].cells
+                row_table12[0].text = str(i + 1)
+                set_font_and_size_without_center(row_table12[0])
                 row_table12[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
                 set_font_and_size_without_center(row_table12[1])
             
@@ -596,6 +590,15 @@ def generate_docx(user):
     doc = Document('dogovor_ob_obych_В.docx')
 
     user_data = user.userdata
+
+    context = {
+                'region': user_data.region if user_data.region else '',
+                'city_or_village': user_data.city_or_village if user_data.city_or_village else '',
+                'street': user_data.street if user_data.street else '',
+                'house': user_data.house if user_data.house else '',
+                'corps': "корпус " + user_data.corps if user_data.corps else '',
+                'apartment': user_data.apartment if user_data.apartment else '',
+            }
     
     # Заполнение меток данными ученика
     for paragraph in doc.paragraphs:
@@ -623,6 +626,20 @@ def generate_docx(user):
             paragraph.text = paragraph.text.replace("{{passport_month}}", str(user_data.passport_date.month))
         if "{{passport_year}}" in paragraph.text:
             paragraph.text = paragraph.text.replace("{{passport_year}}", str(user_data.passport_date.year))
+        if "{{passport_year}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{passport_year}}", str(user_data.passport_date.year))
+        if "{{region}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{region}}", context['region'] )
+        if "{{city_or_village}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{city_or_village}}", context['city_or_village'] )
+        if "{{street}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{street}}", context['street'] )
+        if "{{house}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{house}}", context['house'] )
+        if "{{corps}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{corps}}", context['corps'] )
+        if "{{apartment}}" in paragraph.text:
+            paragraph.text = paragraph.text.replace("{{apartment}}", context['apartment'] )
         if "{{phone}}" in paragraph.text:
             paragraph.text = paragraph.text.replace("{{phone}}", str(user.phone))
     
@@ -820,6 +837,93 @@ def kniga_vojden_users(request):
                     run.font.name = 'Times New Roman'  
                     run.font.size = Pt(16) 
                     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+        # row = doc.tables[4].rows[i+1].cells  
+        # table = doc.tables[4]
+        
+        # student_appointments = Appointment.objects.filter(student=user)
+        # appointment_month = [str(appointment.date.month) for appointment in student_appointments]
+        # appointment_day = [str(appointment.date.day) for appointment in student_appointments]
+        
+        # # Преобразуем массив дат в строку, разделенную запятыми
+        # appointment_dates_str = ', '.join(appointment_month)
+        # # appointment_days = ', '.join(appointment_day)
+        # row = table.rows[4].cells
+        # row[7].text = appointment_day[0] + '.' + '0' + appointment_month[0]
+        # print(len(table.columns))
+        # print( len(table.rows) > 0)
+        # # column_headers = table.rows[0].cells
+        # print(len(table.rows[0].cells) > 0)
+
+        # Получаем данные конкретного человека из базы данных
+        student_appointments = Appointment.objects.filter(student=user)
+        appointment_dates = [f"{appointment.date.day}.{appointment.date.month}" for appointment in student_appointments]
+        print(appointment_dates)
+
+        # Инициализируем индекс для обхода appointment_dates
+        idx = 0
+
+        # Определяем счетчик таблиц
+        table_count = 0
+
+        # Проходим по всем элементам в документе
+        for element in doc.element.body:
+            # Проверяем, является ли элемент таблицей
+            if element.tag.endswith('tbl'):
+                # Увеличиваем счетчик таблиц
+                table_count += 1
+                # Если это шестая таблица, ищем метку `{{date}}` и заменяем её
+                if table_count == 5:
+                    # Проходим по строкам таблицы
+                    for row_idx, row in enumerate(element.findall('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tr')):
+                        # Проходим по ячейкам в строке
+                        for cell_idx, cell in enumerate(row.findall('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc')):
+                            # Проходим по параграфам в ячейке
+                            for paragraph in cell.findall('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p'):
+                                # Проходим по текстовым элементам в параграфе
+                                for text_element in paragraph.findall('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t'):
+                                    if "{{date}}" in text_element.text:
+                                        date_str = appointment_dates[0]  # appointment_dates[0] содержит строку "день.месяц"
+                                        date_parts = date_str.split('.')  # Разделяем строку на части (день и месяц)
+                                        day = int(date_parts[0])
+                                        month = int(date_parts[1])
+                                        if month < 10:
+                                            text_element.text = text_element.text.replace("{{date}}", str(day) + '.0' + str(month))
+                                        else:
+                                            text_element.text = text_element.text.replace("{{date}}", appointment_dates[0])
+                                            # set_font(row[j])
+                                        # text_element.text = text_element.text.replace("{{date}}", appointment_dates[0])
+                                        # Удаляем первый элемент списка, так как он уже использован
+                                        appointment_dates = appointment_dates[1:]
+                                        
+
+        # Вызываем функцию поиска меток внутри таблиц
+        # find_date_labels()
+
+        # for cell in column_headers:
+        #     print(cell.text)
+        
+        # # Устанавливаем строку дат в соответствующую ячейку таблицы для текущего студента
+        # if appointment_dates_str:
+        #     # Заполняем каждую ячейку таблицы соответствующей датой из массива дат
+        #     for j, date in enumerate(appointment_month, start=2):
+        #         row = table.rows[j+2].cells
+        #         if j < 12: 
+        #             # print(appointment_day[j-2]) # Заполняем только первые 20 ячеек
+        #             if date < '10':
+        #                 row[4].text = appointment_day[j] + '.' + '0' + date
+        #                 # set_font(row[4])
+        #             else:
+        #                 row[4].text = appointment_day[j] + '.' + date 
+        #                 # set_font(row[j])
+        #         if j >= 12 and j < 16: 
+        #             row = table.rows[j+3].cells
+        #             if date < '10':
+        #                 row[4].text = appointment_day[j] + '.' + '0' + date
+        #                 # set_font(row_table2[j-20])
+        #             else:
+        #                 row[4].text = appointment_day[j] + '.' + date 
+        #                 # set_font(row_table2[j-20])
         
         
         output_path = "книжка вождения " + user.last_name + user.first_name + ".docx"
@@ -841,3 +945,86 @@ def kniga_vojden(request):
     context = {'users': users, 'instructors': instructors}
     
     return render(request, 'manager_document_kniga_vojden.html', context)
+
+def document_instructor(request):
+    # group = Group.objects.get(id=2)
+    # users = User.objects.filter(email_verify=True, groups=group) 
+    instructors = Instructor.objects.all()
+
+    context = {'instructors': instructors}
+    
+    return render(request, 'manager_document_instructor.html', context)
+
+
+@require_POST
+def instructor_lessons(request):
+    # user_id = request.POST.get('user_id')  
+    # # user = User.objects.filter(id__in=user_id)
+    # user = User.objects.get(id=user_id)
+    month_number = request.POST.get('month_number') 
+
+    instructor_id = request.POST.get('instructor_id')  
+    instructor = Instructor.objects.get(id__in=instructor_id)
+
+    if (instructor_id and month_number):
+        appointments = Appointment.objects.filter(
+            instructor_id=instructor_id,
+            date__month=month_number
+        ).values('date').annotate(count=Count('id'))
+
+        appointments_count_dict = {entry['date']: entry['count'] for entry in appointments}
+        num_days_in_month = calendar.monthrange(datetime.now().year, int(month_number))[1]
+
+        print(month_number)
+        print(instructor)
+
+        template_path = "Табель учета рабочего времени мастера ПОВА.docx"
+        doc = Document(template_path)
+
+        context = {
+                    'second_name': instructor.second_name if instructor.second_name else '',
+                    'name': instructor.name if instructor.name else '',
+                    'surname': instructor.surname if instructor.surname else '',
+                }
+        
+        for paragraph in doc.paragraphs:
+            if "{{second_name}}" in paragraph.text:
+                paragraph.text = paragraph.text.replace("{{second_name}}", context['second_name'])                  
+                for run in paragraph.runs:
+                    run.font.name = 'Times New Roman'  
+                    run.font.size = Pt(16)      
+                    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  
+            if "{{name}}" in paragraph.text:
+                paragraph.text = paragraph.text.replace("{{name}}", context['name'])                
+                for run in paragraph.runs:
+                    run.font.name = 'Times New Roman'  
+                    run.font.size = Pt(16) 
+                    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            if "{{surname}}" in paragraph.text:
+                paragraph.text = paragraph.text.replace("{{surname}}", context['surname'])                
+                for run in paragraph.runs:
+                    run.font.name = 'Times New Roman'  
+                    run.font.size = Pt(16) 
+                    paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        
+        for i in range(num_days_in_month):
+                # row[1].text = instructor.second_name
+                date_for_current_day = datetime(datetime.now().year, int(month_number), i+1).date()
+                count_for_current_day = appointments_count_dict.get(date_for_current_day, 0)
+                row = doc.tables[0].rows[i+3].cells
+                row[1].text = str(count_for_current_day)
+                # row[2].text = str(count_for_current_day)
+                print(date_for_current_day)
+                print(count_for_current_day)
+
+        
+        output_path = "Отчет " + instructor.second_name + ".docx"
+        doc.save(output_path)
+
+        with open(output_path, 'rb') as docx_file:
+            response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+            new_filename = "Отчет " + instructor.second_name + ".docx"
+            response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
+            return response
+        
+    return render(request, 'manager_document_instructor.html')
