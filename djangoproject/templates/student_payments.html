@@ -13,11 +13,21 @@
             <div class="frame">
                 <div>
                     <div class="table-pay">
-                    <div class="pay-info">
-                        <div class="pay-now">Текущая оплата обучения составляет: <span>10 000</span> р.</div>
-                        <div class="pay-balance">Осталось оплатить: <span>20 000</span> р.</div>
+                        <div class="pay-info">
+                            <div class="pay-now">Полная оплата обучения составляет: <span class="full">{{payments.0.full_price}}</span> р.</div>
+                            <div class="pay-balance">Осталось оплатить: <span class="left">{{total_payment}}</span> р.</div>
                         </div>
+                        
                         <div class="circle-big">
+                            <div class="text">
+                                <span id="payment_percent"></span><div class="small">%</div>
+                            </div>
+                            <svg>
+                                <circle class="bg" cx="57" cy="57" r="52"></circle>
+                                <circle class="progress" cx="57" cy="57" r="52" style="stroke-dasharray: 0, 327.13;"></circle>
+                            </svg>
+                        </div>
+                        <!-- <div class="circle-big">
                             <div class="text">
                                 33<div class="small">%</div>
                             </div>
@@ -25,7 +35,7 @@
                                 <circle class="bg" cx="57" cy="57" r="52"></circle>
                                 <circle class="progress" cx="57" cy="57" r="52"></circle>
                             </svg>
-                        </div>
+                        </div> -->
                     </div>
                    
                 </div>
@@ -42,31 +52,61 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <th scope="row">1</th>
-                        <td>12.12.2023</td>
-                        <td>5 000</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">2</th>
-                        <td>12.01.2024</td>
-                        <td>5 000</td>
-                    </tr>
+                        {% for payment in payments %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ payment.payment_date }}</td>
+                                <td>{{ payment.payment }}</td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
             
-
-
-
-            
-    
         </div>
-
-        
-    
-        
     </div>
 
+    <script>
+        var fullPrice = document.querySelector(".full").innerHTML;
+        var leftPrice = document.querySelector(".left").innerHTML;
+        var totalPaymentPercent = parseInt((parseFloat(leftPrice)*100)/parseFloat(fullPrice));
+        console.log(totalPaymentPercent)
+
+        // // Получаем элемент круговой диаграммы, который мы хотим изменить
+        var circle = document.querySelector('.progress');
+
+        // Рассчитываем длину дуги для заданного процента заполнения
+        var circumference = Math.PI * parseFloat(circle.getAttribute('r')) * 2;
+        var offset = circumference - (circumference * totalPaymentPercent / 100);
+
+        // Устанавливаем начальное значение и скрытие круга
+        circle.style.strokeDasharray = circumference;
+        circle.style.strokeDashoffset = circumference;
+
+        // Запускаем анимацию
+        circle.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+        circle.style.strokeDashoffset = offset;
+
+        // Вставляем значение процента в элемент
+        document.getElementById('payment_percent').innerText = totalPaymentPercent;
+        // totalPaymentPercent -= 20;
+        // Рассчитываем длину заполненной части дуги в пикселях
+        // var progressLength = totalPaymentPercent / 100 * 327.13;
+        // circle.style.strokeDasharray = '327.13px';
+        // circle.style.strokeDashoffset = 327.13 - progressLength; // Устанавливаем смещение
+        
+        // // Вставляем значение процента в элемент
+        // document.getElementById('payment_percent').innerText = totalPaymentPercent;
+        // // circle.style.animationPlayState = 'running';
+
+        // // Устанавливаем переменную --offset с помощью CSS переменной
+        // circle.style.setProperty('--percentage', totalPaymentPercent);
+
+        // // Добавляем класс animate для запуска анимации
+        // circle.classList.add('animate');
+
+        
+
+    </script>
 
 {% endblock %}

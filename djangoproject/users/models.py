@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -66,6 +67,12 @@ class UserData(models.Model):
 class UserGroups(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     group_id = models.CharField(max_length=2,null=True)
+
+class Payments(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_price = models.FloatField(default=20000.0)
+    payment = models.FloatField(max_length=6,null= False)
+    payment_date = models.DateField(default=timezone.now)
 
 # user = models.OneToOneField(User, on_delete=models.CASCADE)
 #     passport_series = models.CharField(max_length=20)

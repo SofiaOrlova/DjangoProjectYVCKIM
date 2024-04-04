@@ -53,66 +53,60 @@
       </a>
 
       <div class="list-group list-group-flush">
-        <a href="/users/user_profile/manager_dashboard/" class="list-group-item waves-effect active">
+        <a href="/users/user_profile/manager_dashboard/" class="list-group-item waves-effect">
           <i class="fa fa-user mr-3"></i> Подтвердить регистрацию
         </a>
         <a href="/users/user_profile/manager_add_users_data/" class="list-group-item waves-effect">
           <i class="fa fa-table mr-3"></i> Добавить данные
         </a>
-        <a href="/users/user_profile/manager_add_users_payments/" class="list-group-item waves-effect">
+        <a href="/users/user_profile/manager_add_users_payments/" class="list-group-item waves-effect active">
           <i class="fa fa-wallet mr-3"></i> Добавить данные о платежах
         </a>
       </div>
     </div>
   </header>
 
-  <main class="pt-5 max-lg-5">
-    <div class="container-fluid mt-5">
-        <div class="card mb-4 wow fadeIn">
-            <div class="card body d-sm-flex justify-content-between card-manager">
-                <h4 class="mb-2 mb-sm-0 pt-1 card-title">
-                    <a href="#">Ученики</a>
-                    <span> / </span>
-                    <span>Подтверждение регистрации пользователя</span> fddsgrdg
-                </h4>
+    <main class="pt-5 max-lg-5">
+        <div class="container-fluid mt-5">
+            <div class="card mb-4 wow fadeIn">
+                <div class="card body d-sm-flex justify-content-between card-manager">
+                    <h4 class="mb-2 mb-sm-0 pt-1 card-title">
+                        <a href="#">Ученики</a>
+                        <span> / </span>
+                        <span>Добавить данные о платежах пользователя</span>
+                    </h4>
 
-                <form id="confirmation-form" method="post" action="{% url 'confirm_users' %}">
-                    {% csrf_token %}
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Имя</th>
-                                <th scope="col">Фамилия</th>
-                                <th scope="col">Отчество</th>
-                                <th scope="col">Почта</th>
-                                <th scope="col">Подтвердить</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                                <tr>
-                                    <th scope="row">{{ forloop.counter }}</th>
-                                    <td>{{ user.first_name }}</td>
-                                    <td>{{ user.last_name }}</td>
-                                    <td>{{ user.surname }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="user_id" value="{{ user.id }}">
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <button type="submit" class="btn btn-primary btn-users">Подтвердить</button>
-                </form>
-
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="input-add-data">
+                            <label class="form-label" for="{{form.full_price.id_for_label}}">Полная цена обучения</label>
+                            {{form.full_price}}
+                            {{form.full_price.errors}}
+                        </div>
+                        <div class="input-add-data">
+                            <label class="form-label" for="{{form.payment.id_for_label}}">Добавить платеж</label>
+                            {{form.payment}}
+                            {{form.payment.errors}}
+                        </div>
+                        <!-- <div class="input-add-data" >
+                          <label class="form-label" for="{{form.payment_date.id_for_label}}">Дата</label>
+                          {{form.payment_date}}
+                          {{form.payment_date.errors}}
+                      </div> -->
+                        <div class="input-add-data">
+                          <label class="form-label" for="{{ form.payment_date.id_for_label }}">Дата</label>
+                          <input type="date" id="{{ form.payment_date.id_for_label }}" name="{{ form.payment_date.name }}" value="{{ form.payment_date.initial }}">
+                          {{ form.payment_date.errors }}
+                        </div>
+                    
+                        <button type="submit" class="btn btn-primary btn-users">Добавить</button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-  </main>  
+    </main>
+
+  
 
   <!-- jQuery -->
   <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
@@ -122,27 +116,8 @@
   <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
   <!-- MDB core JavaScript -->
   <script type="text/javascript" src="{% static 'js/mdb.min.js' %}"></script>
-
+  <!-- Your custom scripts (optional) -->
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('confirmation-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            var formData = new FormData(this);
-    
-            fetch('/users/user_profile/manager_dashboard/confirm_users/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.reload_page) {
-                    location.reload();  
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-    });
   </script>
 
 </body>

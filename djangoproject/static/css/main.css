@@ -181,6 +181,10 @@ header{
 
 /* __________________   student_pickDataTime css ______________________ */
 
+.flatpickr-calendar.animate.open{
+    animation: 0 !important;
+}
+
 .title-pick{
     margin-bottom: 10px;
 }
@@ -315,7 +319,7 @@ header{
   margin: 0;
 }
 
-.circle-big {
+/* .circle-big {
   position: relative;
   width: 114px;
   height: 114px;
@@ -330,19 +334,76 @@ header{
   fill: none;
   stroke-width: 10px;
   stroke: #313035b0;
+} */
+
+/* .circle-big .progress {
+    fill: none;
+    stroke-width: 10px;
+    stroke: #21466b;
+    stroke-linecap: round;
+    stroke-dasharray: 327.13; 
+    /* stroke-dashoffset: 0;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    animation: big 1.5s ease-in-out; 
+  } */ 
+  /* .circle-big .progress {
+    fill: none;
+    stroke-width: 10px;
+    stroke: #21466b;
+    stroke-linecap: round;
+    /* stroke-dasharray: 327.13;  */
+    /* stroke-dasharray: 327.13; 
+    stroke-dashoffset: 327.13;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    animation: big 1.5s ease-in-out;
+} */ 
+
+/* .circle-big .progress {
+    fill: none;
+    stroke-width: 10px;
+    stroke: #21466b;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    animation: big 1.5s ease-in-out forwards;
+} */
+
+.circle-big {
+    position: relative;
+    width: 114px;
+    height: 114px;
+}
+
+.circle-big svg {
+    width: 114px;
+    height: 114px;
+}
+
+.circle-big .bg {
+    fill: none;
+    stroke-width: 10px;
+    stroke: #313035b0;
 }
 
 .circle-big .progress {
-  fill: none;
-  stroke-width: 10px;
-  stroke: #21466b;
-  stroke-linecap: round;
-  stroke-dasharray: 326.56;
-  stroke-dashoffset: 230;
-          transform: rotate(-90deg);
-          transform-origin: 50% 50%;
-          animation: big 1.5s ease-in-out;
+    fill: none;
+    stroke-width: 10px;
+    stroke: #21466b;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    stroke-dasharray: 327.13;
+    stroke-dashoffset: 327.13;
 }
+
+
+/* 
+.circle-big .progress.animate {
+    stroke-dashoffset: var(--offset);
+    animation: big 1.5s ease-in-out;
+} */
 
 .circle-big .text {
   position: absolute;
@@ -359,41 +420,34 @@ header{
   /* color: #fff; */
 }
 
-@keyframes big {
-  from {
-    stroke-dashoffset: 326.56;
-  }
-  to {
-    stroke-dashoffset: 60;
-  }
-}
+/* @keyframes big {
+    from {
+        stroke-dashoffset: 327.13; /* Начальное значение для заполнения круга */
+    /* }
+    to {
+        stroke-dashoffset: calc(327.13 - (327.13 * var(--percentage) / 100)); /* Конечное значение, соответствующее пустому кругу */
+    /* }
+}  */
 
-@keyframes one {
-  from {
-    stroke-dashoffset: 232.36;
-  }
-  to {
-    stroke-dashoffset: 80;
-  }
-}
 
-@keyframes two {
-  from {
-    stroke-dashoffset: 232.36;
-  }
-  to {
-    stroke-dashoffset: 140;
-  }
-}
+/* @keyframes big {
+    from {
+        stroke-dashoffset: 327.13; /* Начальное значение для заполнения круга */
+    /* }
+    to {
+        stroke-dashoffset: 0; /* Конечное значение, соответствующее пустому кругу */
+    /* }
+} */ 
 
-@keyframes appear {
+
+/* @keyframes appear {
 	0%, 50% {
 		opacity: 0;
 	}
 	100% {
 		opacity: 1;
 	}
-}
+} */
 
 .table-pay{
     display: grid;

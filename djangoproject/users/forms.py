@@ -7,9 +7,10 @@ from django import forms
 from datetime import date
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
 
 from users.utils import send_email_for_verify
-from .models import Appointment, UserData
+from .models import Appointment, UserData, Payments
 from datetime import time
 
 
@@ -97,3 +98,17 @@ class UserDataForm(forms.ModelForm):
         super(UserDataForm, self).__init__(*args, **kwargs)
         for field in self.fields.values():
             field.required = False
+
+class UserPaymentsForm(forms.ModelForm):
+    class Meta:
+        model = Payments
+        fields = ['full_price', 'payment', 'payment_date']
+        widgets = {
+            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(UserPaymentsForm, self).__init__(*args, **kwargs)
+        if 'instance' not in kwargs:
+            # Если форма не связана с существующим объектом, установите текущую дату как дефолтное значение
+            self.initial['payment_date'] = timezone.now().date()

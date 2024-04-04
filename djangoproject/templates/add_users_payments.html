@@ -53,13 +53,13 @@
       </a>
 
       <div class="list-group list-group-flush">
-        <a href="/users/user_profile/manager_dashboard/" class="list-group-item waves-effect active">
+        <a href="/users/user_profile/manager_dashboard/" class="list-group-item waves-effect">
           <i class="fa fa-user mr-3"></i> Подтвердить регистрацию
         </a>
         <a href="/users/user_profile/manager_add_users_data/" class="list-group-item waves-effect">
           <i class="fa fa-table mr-3"></i> Добавить данные
         </a>
-        <a href="/users/user_profile/manager_add_users_payments/" class="list-group-item waves-effect">
+        <a href="/users/user_profile/manager_add_users_payments/" class="list-group-item waves-effect active">
           <i class="fa fa-wallet mr-3"></i> Добавить данные о платежах
         </a>
       </div>
@@ -73,46 +73,46 @@
                 <h4 class="mb-2 mb-sm-0 pt-1 card-title">
                     <a href="#">Ученики</a>
                     <span> / </span>
-                    <span>Подтверждение регистрации пользователя</span> fddsgrdg
+                    <span>Добавить данные пользователя</span>
                 </h4>
 
-                <form id="confirmation-form" method="post" action="{% url 'confirm_users' %}">
-                    {% csrf_token %}
-                    <table class="table">
-                        <thead>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Имя</th>
+                            <th scope="col">Фамилия</th>
+                            <th scope="col">Почта</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
                             <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Имя</th>
-                                <th scope="col">Фамилия</th>
-                                <th scope="col">Отчество</th>
-                                <th scope="col">Почта</th>
-                                <th scope="col">Подтвердить</th>
+                                <th scope="row">{{ user.id }}</th>
+                                <td>{{ user.first_name }}</td>
+                                <td>{{ user.last_name }}</td>
+                                <td>{{ user.surname }}</td>
+                                <td>
+                                    <div class="form-check">
+                                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault{{ user.id }}" data-user-id="{{ user.id }}">
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                                <tr>
-                                    <th scope="row">{{ forloop.counter }}</th>
-                                    <td>{{ user.first_name }}</td>
-                                    <td>{{ user.last_name }}</td>
-                                    <td>{{ user.surname }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="user_id" value="{{ user.id }}">
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <button type="submit" class="btn btn-primary btn-users">Подтвердить</button>
-                </form>
-
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if users %}
+                  <a class="btn btn-primary btn-users" href="{% url 'add_user_payment' user.id %}" id="addUserDataBtn" data-user-id="{{ user.id }}">Добавить данные пользователю</a>
+                {% else %}
+                    <p>No users found.</p>
+                {% endif %}
             </div>
         </div>
     </div>
-  </main>  
+  </main>
+
+  
 
   <!-- jQuery -->
   <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
@@ -122,28 +122,15 @@
   <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
   <!-- MDB core JavaScript -->
   <script type="text/javascript" src="{% static 'js/mdb.min.js' %}"></script>
-
+  <!-- Your custom scripts (optional) -->
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('confirmation-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            var formData = new FormData(this);
-    
-            fetch('/users/user_profile/manager_dashboard/confirm_users/', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.reload_page) {
-                    location.reload();  
-                }
-            })
-            .catch(error => console.error('Error:', error));
+    document.querySelectorAll('.form-check-input').forEach(function(input) {
+        input.addEventListener('click', function() {
+            var userId = this.getAttribute('data-user-id');
+            window.location.href = "{% url 'add_user_payment' user_id=0 %}".replace('0', userId);
         });
     });
   </script>
-
+  <script type="text/javascript"></script>
 </body>
 </html>

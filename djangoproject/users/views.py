@@ -32,10 +32,11 @@ from django.utils.http import quote
 from django.db.models import Q
 from django.db.models import Count
 import calendar
+from django.db.models import Sum
 
 from .models import Instructor
-from .models import Appointment, Instructor, Notation, UserData
-from .forms import AppointmentForm
+from .models import Appointment, Instructor, Notation, UserData, Payments
+from .forms import AppointmentForm, UserPaymentsForm
 from django.shortcuts import get_object_or_404
 
 
@@ -374,7 +375,9 @@ def confirm_users(request):
 
 
 def manager_add_users_data(request):
-    users = User.objects.filter(email_verify=1) 
+    group = Group.objects.get(id=2)
+    users = User.objects.filter(email_verify=True, groups=group)
+    # users = User.objects.filter(email_verify=1) 
     return render(request, 'manager_add_users_data.html', {'users': users})
 
 
@@ -397,7 +400,30 @@ def add_user_data(request, user_id):
 
 def payments(request):
     # users = User.objects.filter(email_verify=0) 
-    return render(request, 'student_payments.html')
+    user = request.user
+    payments = Payments.objects.filter(user=user)
+    # full_price = payments.full_price
+    total_payment = payments.aggregate(Sum('payment'))['payment__sum'] or 0
+    return render(request, 'student_payments.html', {'payments': payments, 'total_payment': total_payment})
+
+def manager_add_users_payments(request):
+    group = Group.objects.get(id=2)
+    users = User.objects.filter(email_verify=True, groups=group)
+    return render(request, 'add_users_payments.html', {'users': users})
+
+def add_user_payment(request, user_id):
+    user = User.objects.get(id=user_id)
+
+    if request.method == 'POST':
+        form = UserPaymentsForm(request.POST)
+        if form.is_valid():
+            form.instance.user = user  # Устанавливаем пользователя для нового платежа
+            form.save()
+            return redirect('manager_add_users_payments')
+    else:
+        form = UserPaymentsForm()
+
+    return render(request, 'add_user_payment.html', {'user': user, 'form': form})
 
 def profile(request):
     return render(request, 'student_profile.html')
