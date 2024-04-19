@@ -5,19 +5,19 @@
     <div class="container">
         <div>
             <h4 class="title-client title-pick">Личный кабинет пользователя</h4>
-            <div class="name-profile">Иванов Иван Иванович</div>
+            <div class="name-profile">{{user.last_name}} {{user.first_name}} {{user.surname}}</div>
 
             <div class="mb-3 row">
                 <label for="staticEmail" class="col-sm-2 col-form-label">Адрес электронной почты</label>
                 <div class="col-sm-10">
-                  <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="email@example.com">
+                  <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="{{user.email}}">
                 </div>
             </div>
 
             <div class="mb-3 row">
                 <label for="staticEmail" class="col-sm-2 col-form-label">Телефон</label>
                 <div class="col-sm-10">
-                  <input type="text" readonly class="form-control-plaintext" id="staticPhone" value="+7-999-999-99-99">
+                  <input type="text" readonly class="form-control-plaintext" id="staticPhone" value="{{ user.phone|default_if_none:'' }}"> 
                 </div>
             </div>
              

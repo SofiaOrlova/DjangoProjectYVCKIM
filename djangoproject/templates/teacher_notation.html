@@ -40,11 +40,11 @@
                         <a class="nav-link current-link" href="/users/user_profile/teacher_notation/">Добавить занятие</a>
                     {% endif %}
                 </li>
-                <!-- <li class="nav-item">
+                <li class="nav-item current-link">
                     {% if user.is_authenticated %}
-                        <a class="nav-link current-link" href="/users/user_profile/teacher_notation/"></a>
+                        <a class="nav-link" href="/users/user_profile/teacher_notice/">Отправить уведомление</a>
                     {% endif %}
-                </li> -->
+                </li>
                 <li class="nav-item nav-item-logout">
                     {% if user.is_authenticated %}
                         <a href="{% url 'logout' %}" class="nav-link img-exit">Выйти</a>
@@ -75,7 +75,7 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <p>No users found.</p>
+                <p>Нет пользователей</p>
             {% endif %}
 
             <div class="date-calendar date-calendar-teacher">
@@ -89,9 +89,10 @@
                 {{ form.time.label_tag }}
                 {{ form.time }}
                 </div>
+
         
                 <div id="time-buttons">
-                    <!-- Создайте блоки или кнопки для времени здесь -->
+                    
                 </div>
                 
                 <input type="submit" value="Записать" class="btn btn-primary btn-note">
@@ -131,29 +132,25 @@
                     longhand: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
                     },
                 },
+                static: true, // Делаем календарь статическим (без выпадающего виджета)
+                appendTo: document.getElementById("appointment-form") // Добавляем календарь внутрь формы
 
             });
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Найдем элемент с классом "flatpickr-calendar"
             var flatpickrCalendar = document.querySelector('.flatpickr-calendar');
             var flatpickrCalendars = document.querySelectorAll('.flatpickr-calendar');
 
-            // Проверим, что элемент существует, прежде чем добавлять класс
             if (flatpickrCalendar) {
-                // Добавим класс "open"
                 flatpickrCalendar.classList.add('open');
-                // flatpickrCalendar.classList.add('animate');
                 flatpickrCalendar.classList.add('arrowTop');
                 flatpickrCalendar.classList.add('arrowLeft');
                 console.log("class");
-                flatpickrCalendar.style.top = '450.8px';
-                flatpickrCalendar.style.left = '386.05px';
+                flatpickrCalendar.style.top = '0';
                 flatpickrCalendar.style.right = 'auto';
                 console.log("style");
                 if (flatpickrCalendars.length > 0) {
-                    // Получим последний элемент
                     var lastFlatpickrCalendar = flatpickrCalendars[flatpickrCalendars.length - 1];
                     lastFlatpickrCalendar.remove();
                 }
@@ -164,13 +161,11 @@
         document.getElementById("id_date").addEventListener("change", function () {
             var selectedDate = this.value;
             var timeButtons = document.getElementById("time-buttons");
-            timeButtons.innerHTML = ""; // Очистите текущие блоки времени
+            timeButtons.innerHTML = ""; 
 
-            // Получение id инструктора из текущего URL
             var instructorId = extractInstructorId();
             console.log(instructorId);            
 
-            // Отправьте AJAX-запрос на сервер, чтобы получить доступное время для выбранной даты и инструктора
             fetch("/users/get_available_times/?date=" + selectedDate + "&instructor_id=" + instructorId)
                 .then((response) => response.json())
                 .then((data) => {

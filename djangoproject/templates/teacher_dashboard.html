@@ -32,12 +32,17 @@
             <ul class="nav">
                 <li class="nav-item">
                     {% if user.is_authenticated %}
-                        <a class="nav-link current-link" href="/users/user_profile/schedule/">Расписание</a>
+                        <a class="nav-link current-link" href="/users/user_profile/teacher_dashboard/">Расписание</a>
                     {% endif %}
                 </li>
                 <li class="nav-item">
                     {% if user.is_authenticated %}
                         <a class="nav-link" href="/users/user_profile/teacher_notation/">Добавить занятие</a>
+                    {% endif %}
+                </li>
+                <li class="nav-item">
+                    {% if user.is_authenticated %}
+                        <a class="nav-link" href="/users/user_profile/teacher_notice/">Отправить уведомление</a>
                     {% endif %}
                 </li>
                 <li class="nav-item nav-item-logout">
@@ -56,9 +61,44 @@
         <h2 class="title-client">Расписание инструктора</h2>
         
         <div id='calendar'></div>
+        <div id="alert_placeholder">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>        
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">Отправить сообщение</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="message-form" method="post" action="{% url 'send_message' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Сообщение</label>
+                        <input type="text" class="form-control" id="textMessage" placeholder="Введите сообщение тут">
+                        <input type="hidden" id="recipient_id" name="recipient_id" value="" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-primary">Отправить</button>
+                    </div>
+                </form>
+              </div>
+            </div>
+        </div>
     </div>
 
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script>
 
@@ -74,7 +114,6 @@
             console.error('Ошибка при парсинге JSON:', error);
             appointments = [];
         }
-        // console.log(appointments);
 
         var calendarEl = document.getElementById('calendar');
         var selectedEventId;
@@ -92,42 +131,86 @@
           },
           events: appointments.map(function(appointment) {
                 var startTime = appointment.date + 'T' + appointment.time;
-                // console.log(appointment.id);
                 return {
                     id: appointment.id,
                     title: appointment.student,
                     start: startTime,
                 };
             }),
-            eventClick: function(info) {
-                selectedEventId = info.event.id;
-                console.log('Выбранное событие ID:', selectedEventId);
-                if (confirm('Вы уверены, что хотите удалить событие?')) {
-                // Пользователь согласился удалить событие
-                    deleteEvent(selectedEventId);
-                }
-            },
+            // eventClick: function(info) {
+            //     selectedEventId = info.event.id;
+            //     // if (confirm('Вы уверены, что хотите удалить событие?')) {
+            //     //     deleteEvent(selectedEventId);
+            //     // }
+            // },
             
         });
 
-        calendar.render();    
+        calendar.render();  
 
         applyCustomStyles();
+        function applyCustomStyles() {
+            var eventElements = document.querySelectorAll('.fc-event');
+            var eventTimeElements = document.querySelectorAll('.fc-event-time');
+            eventTimeElements.forEach(function(element) {
+                var originalTime = element.textContent.trim();
+                var [hours, minutes] = originalTime.split(':').map(Number);
+                minutes += 90;
+                if (minutes >= 60) {
+                    hours += Math.floor(minutes / 60);
+                    minutes %= 60;
+                }
+                var newTime = hours + ':' + padNumber(minutes);
+                element.textContent = originalTime + '-' + newTime;
+            });
+            // appointments = JSON.parse(appointments_json);
+            // console.log(appointments);
+            eventElements.forEach((card, index) => {
+                var eventId = appointments[index].id; 
+    
+                // var recipientId = appointments[index].student.id;
+                // console.log(appointments[index]);
+                // console.log(appointments.student);
+                // console.log(recipientId);
+                card.innerHTML += `<div class='btn-grp'> <button id='deleteEventBtn-${eventId}' class='input-group-text deleteEventbtn' data-event-id='${eventId}'><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-trash3' viewBox='0 0 16 16'><path d='M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z'/></svg></button></div>`;
+            });
+            sendMessage();
+        }
 
-        // console.log(calendarEl);
+        // function sendMessage(){
+        //     var btnsModal = document.querySelectorAll(".btn-mes");
+        //     btnsModal.forEach(btnModal => {
+        //         btnModal.addEventListener("click", function() {
+        //             var eventId = this.getAttribute('data-event-id');
+        //             var modalForm = document.getElementById('message-form');
+        //             var recipientInput = modalForm.querySelector('#recipient_id');
+        //             console.log(eventId);
+        //             // var event = document.querySelector(`[data-event-id="${eventId}"]`);
+        //             // var appointmentId = this.getAttribute('data-appointment-id');
+        //             // console.log(appointmentId);
+        //             var recipientId = getRecipientIdFromAppointment(eventId);
+        //             console.log(recipientId);
+        //             recipientInput.value = recipientId;
+        //         });
+        //     });
+        // }
 
-        // calendarEl.addEventListener('click', function(info) {
-        //     var event = calendar.getEventById(50);
-        //     // var event = info.event || (info.jsEvent && info.jsEvent.target.closest('.fc-event'));
-        //     console.log("click calendar");
-        //     console.log(event);
-        //     console.log(info.events);
-        //     if (event) {
-        //         selectedEventId = event.id;  // сохраняем ID выбранного события
-        //         console.log('Выбрано событие с ID:', selectedEventId);
+        // function getRecipientIdFromAppointment(eventId) {
+        //     var appointment = appointments.find(appointment => appointment.id === eventId);
+        //     console.log(appointment);
+            
+        //     if (appointment) {
+        //         var recipientId = appointment.student_id; 
+                
+        //         // Возвращаем recipientId
+        //         console.log("функция получить id");
+        //         console.log(recipientId);
+        //         return recipientId;
+        //     } else {
+        //         // Возвращаем null, если объект appointment не найден
+        //         return null;
         //     }
-        // });
-       
+        // }       
 
         var btnCalendar = document.querySelectorAll('.fc-button');
 
@@ -136,102 +219,79 @@
                 applyCustomStyles();
             });
         });
+        var eventDate;
 
-        function deleteEvent(selectedEventId){
+        $('.deleteEventbtn').on('click', function() {
+            if (confirm('Вы уверены, что хотите удалить событие?')) {
+                var eventDate = $(this).closest('.fc-daygrid-day').attr('data-date');
+                var selectedEventId = $(this).data('event-id');
+                var time = $(this).closest('.fc-daygrid-event').find('.fc-event-time').text();
+                var startTime = time.split('-')[0].trim();
+                var eventTime = startTime + ':00'; 
+
+                deleteEvent(selectedEventId, eventDate, eventTime);
+            }
+        });
+        function deleteEvent(selectedEventId, eventDate, eventTime){
             var selectedEvent = calendar.getEventById(selectedEventId);
-
             if (selectedEvent) {
-                // Отправляем запрос на сервер для удаления события
                 $.ajax({
-                    url: 'delete_event/',  // Замените на реальный путь
+                    url: 'delete_event/', 
                     type: 'POST',
-                    data: JSON.stringify({ event_id: selectedEvent.id }),
+                    data: JSON.stringify({ 
+                        event_id: selectedEventId,
+                        event_date: eventDate,
+                        event_time: eventTime
+                    }),
                     contentType: 'application/json; charset=utf-8',
                     dataType: 'json',
                     success: function(response) {
                         console.log('Событие успешно удалено!');
                         location.reload();
-                        selectedEvent.remove();
                     },
                     error: function(error) {
                         console.error('Ошибка при удалении события:', error);
                     }
                 });
             } else {
-                console.warn('Не выбрано событие для удаления.');
+                console.warn('Не удалось найти событие для удаления.');
             }
         }
-
-
-        // var deleteEventBtn = document.getElementById('deleteEventBtn');
-        // var deleteEventBtns = document.querySelectorAll("#deleteEventBtn");
-        // console.log(deleteEventBtns);
-        // deleteEventBtns.forEach(deleteEventBtn=>{
-        //     deleteEventBtn.addEventListener('click', function() {
-        //         console.log("click");
-        //         // Получаем выбранное событие из календаря
-        //         var selectedEvent = calendar.getEventById(selectedEventId);
-
-        //         if (selectedEvent) {
-        //             // Отправляем запрос на сервер для удаления события
-        //             $.ajax({
-        //                 url: 'delete_event/',  // Замените на реальный путь
-        //                 type: 'POST',
-        //                 data: JSON.stringify({ event_id: selectedEvent.id }),
-        //                 contentType: 'application/json; charset=utf-8',
-        //                 dataType: 'json',
-        //                 success: function(response) {
-        //                     console.log('Событие успешно удалено!');
-        //                     applyCustomStyles();
-        //                     selectedEvent.remove();
-        //                 },
-        //                 error: function(error) {
-        //                     console.error('Ошибка при удалении события:', error);
-        //                 }
-        //             });
-        //         } else {
-        //             console.warn('Не выбрано событие для удаления.');
-        //         }
-        //     });
-        // });
-        
-
       });
 
-    
-
-    function applyCustomStyles() {
-        var eventElements = document.querySelectorAll('.fc-event');
-        // console.log(eventElements);
-        var eventTimeElements = document.querySelectorAll('.fc-event-time');
-        // console.log(eventTimeElements);
-        eventTimeElements.forEach(function(element) {
-            var originalTime = element.textContent.trim();
-            var [hours, minutes] = originalTime.split(':').map(Number);
-            minutes += 90;
-            if (minutes === 120) {
-                    hours += 2;
-                    minutes -= 120;
-                }
-
-            if (minutes === 90) {
-                hours += 1;
-                minutes -= 60;
-            }
-            var newTime = hours + ':' + padNumber(minutes);
-            element.textContent = originalTime + '-' + newTime;
-        });
-        let eventCards = document.querySelectorAll(".fc-event");
-        // console.log(eventCards);
-        eventCards.forEach(card=>{
-            card.innerHTML += "<div class='btn-grp'> <button id='deleteEventBtn' class='input-group-text'><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-trash3' viewBox='0 0 16 16'><path d='M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z'/></svg></button> <button id='messageEventBtn' class='input-group-text'>&#9993;</button></div>";
-            
-        });
-    }
 
     function padNumber(number) {
         return number < 10 ? '0' + number : number;
     }
+
+
+    // document.getElementById('message-form').addEventListener('submit', function(event) {
+    //     event.preventDefault(); // Предотвращаем отправку формы по умолчанию
+
+    //     var formData = new FormData(this);
+
+    //     fetch(this.action, {
+    //         method: this.method,
+    //         body: formData
+    //     })
+    //     .then(response => {
+    //         if (response.ok) {
+    //             return response.text();
+    //         } else {
+    //             throw new Error('Network response was not ok.');
+    //         }
+    //     })
+    //     .then(data => {
+    //         var alertPlaceholder = document.getElementById('alert_placeholder');
+    //         alertPlaceholder.innerHTML = data; // Заменяем содержимое блока alert на сообщение от сервера
+    //     })
+    //     .catch(error => {
+    //         console.error('Error:', error);
+    //         var alertPlaceholder = document.getElementById('alert_placeholder');
+    //         alertPlaceholder.innerHTML = '<div class="alert alert-danger alert-dismissible fade show" role="alert">Произошла ошибка при отправке запроса.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+    //     });
+    // });
+
 
     </script>
 </body>

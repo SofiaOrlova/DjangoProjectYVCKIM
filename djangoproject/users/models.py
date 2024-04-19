@@ -74,6 +74,12 @@ class Payments(models.Model):
     payment = models.FloatField(max_length=6,null= False)
     payment_date = models.DateField(default=timezone.now)
 
+class Message(models.Model):
+    sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE)
+    body = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
 # user = models.OneToOneField(User, on_delete=models.CASCADE)
 #     passport_series = models.CharField(max_length=20)
 #     passport_number = models.CharField(max_length=20)

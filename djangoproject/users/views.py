@@ -22,6 +22,7 @@ from docxtpl import DocxTemplate
 from django.http import FileResponse
 from io import BytesIO
 import io
+from django.contrib import messages
 from docx import Document
 import os
 from docx.shared import Pt
@@ -35,7 +36,7 @@ import calendar
 from django.db.models import Sum
 
 from .models import Instructor
-from .models import Appointment, Instructor, Notation, UserData, Payments
+from .models import Appointment, Instructor, Notation, UserData, Payments, Message
 from .forms import AppointmentForm, UserPaymentsForm
 from django.shortcuts import get_object_or_404
 
@@ -265,6 +266,7 @@ def teacher_dashboard(request):
             'date': appointment.date.strftime('%Y-%m-%d'),
             'time': appointment.time.strftime('%H:%M:%S'),
             'student': f"{appointment.student.first_name} {appointment.student.last_name}",
+            'student_id': appointment.student.id,
         })
 
     appointments_json = json.dumps(appointments_data)
@@ -273,39 +275,52 @@ def teacher_dashboard(request):
     return render(request, 'teacher_dashboard.html', context)
 
 
+# @csrf_exempt
+# @require_POST
+# def delete_event(request):
+#     try:
+#         data = json.loads(request.body)
+#         event_id = data.get('event_id')
+
+#         if event_id is not None:
+#             # Ищем событие по ID и удаляем его из базы данных
+#             appointment = Appointment.objects.get(id=event_id)
+#             appointment.delete()
+
+#             return JsonResponse({'status': 'success'})
+#         else:
+#             return JsonResponse({'status': 'error', 'message': 'ID события не указан.'})
+
+#     except json.JSONDecodeError as e:
+#         return JsonResponse({'status': 'error', 'message': str(e)})
+
 @csrf_exempt
 @require_POST
 def delete_event(request):
     try:
         data = json.loads(request.body)
-        event_id = data.get('event_id')
+        event_date = data.get('event_date')
+        event_time = data.get('event_time')
 
-        if event_id is not None:
-            # Ищем событие по ID и удаляем его из базы данных
-            appointment = Appointment.objects.get(id=event_id)
-            appointment.delete()
-
-            return JsonResponse({'status': 'success'})
+        if event_date is not None and event_time is not None:
+            # Ищем событие по дате и времени и удаляем его из базы данных
+            appointment = Appointment.objects.filter(date=event_date, time=event_time)
+            if appointment.exists():
+                appointment.delete()
+                return JsonResponse({'status': 'success'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Событие не найдено.'})
         else:
-            return JsonResponse({'status': 'error', 'message': 'ID события не указан.'})
+            return JsonResponse({'status': 'error', 'message': 'Дата и/или время события не указаны.'})
 
     except json.JSONDecodeError as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
+
     
 
 def teacher_notation(request):
-    # Получаем текущего пользователя
-    current_user = request.user
-
-    # Находим записи в таблице Notation, где текущий пользователь является инструктором
-    notations = Notation.objects.filter(instructor_id=current_user.id)
-
-    # Получаем ID пользователей из записей в таблице Notation
-    user_ids = notations.values_list('user_id', flat=True)
-
-    # Получаем данные пользователей из таблицы UserProfile
-    users_sorted = User.objects.filter(id__in=user_ids)
-
+    group = Group.objects.get(id=2)
+    users_sorted = User.objects.filter(email_verify=True, groups=group)
 
     user_id_current = request.user.id 
     instructor = Instructor.objects.get(user_id=user_id_current)
@@ -334,7 +349,7 @@ def teacher_notation(request):
                 appointment.student = selected_user
                 appointment.save()
                 context = {'appointments': appointment}
-                return render(request, 'success_url.html', context)
+                return render(request, 'success_url_instructor.html', context)
     else:
         form = AppointmentForm()
 
@@ -350,6 +365,27 @@ def teacher_notation(request):
 
     return render(request, 'teacher_notation.html', context)
 
+def  teacher_notice(request):
+    group = Group.objects.get(id=2)
+    users_sorted = User.objects.filter(email_verify=True, groups=group)
+    context = {'users': users_sorted}
+    return render(request, 'teacher_notice.html', context)
+
+@login_required
+def send_message(request):
+    if request.method == 'POST':
+        recipient_ids_str = request.POST.get('recipient_ids') 
+        recipient_ids = recipient_ids_str.split(',')
+        message_body = request.POST.get('textMessage')  
+
+        sender = request.user
+
+        for recipient_id in recipient_ids:
+            recipient = User.objects.get(id=recipient_id)
+            message = Message.objects.create(sender=sender, recipient=recipient, body=message_body)
+            message.save()
+        messages.success(request, 'Сообщение успешно отправлено!')
+        return redirect('teacher_notice')
 
 def manager_dashboard(request):
     users = User.objects.filter(email_verify=0) 
@@ -365,13 +401,13 @@ def confirm_users(request):
 
     users.update(email_verify=1)  
 
-    # Присвоение группы с group_id = 2
-    group = Group.objects.get(id=2)  # Получаем группу с id = 2
+    group = Group.objects.get(id=2) 
     for user in users:
-        user.groups.add(group)  # Добавляем пользователя в группу
+        user.groups.add(group)
 
     response_data = {'reload_page': True}
     return JsonResponse(response_data)
+
 
 
 def manager_add_users_data(request):
@@ -426,7 +462,13 @@ def add_user_payment(request, user_id):
     return render(request, 'add_user_payment.html', {'user': user, 'form': form})
 
 def profile(request):
-    return render(request, 'student_profile.html')
+    user_id = request.user.id
+    user = User.objects.get(id=user_id)
+    return render(request, 'student_profile.html', {'user': user})
+
+# def manager_dashboard(request):
+#     users = User.objects.filter(email_verify=0) 
+#     return render(request, 'manager_dashboard.html', {'users': users})
 
 
 def generate_group_journal(request):

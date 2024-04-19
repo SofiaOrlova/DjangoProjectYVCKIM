@@ -221,11 +221,16 @@ header{
     display: block !important;
     opacity: 1 !important;
     visibility: visible !important;
-    /* top: 470px !important; */
     left: 50% !important;
     transform: translateX(-50%);
     z-index: 1000000 !important; 
+    margin-top: 70px !important;
 } 
+
+.flatpickr-wrapper{
+    display: flex !important;
+    justify-content: center;
+}
 
 #time-buttons{
     margin-top: 330px;
@@ -290,22 +295,7 @@ header{
 
 
 .frame {
-  /* position: absolute; */
-  /* top: 50%;
-  left: 50%;
-  width: 400px;
-  height: 400px;
-  margin-top: -200px;
-  margin-left: -200px; */
-  /* border-radius: 3px;
-  box-shadow: .5rem .5rem 1rem rgba(0, 0, 0, 0.6); */
   overflow: hidden;
-  /* background: #413951; */
-  /* background: linear-gradient(145deg, #413951 0%, #201c29 100%); */
-  /* filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#413951', endColorstr='#201c29',GradientType=0 ); */
-  /* color: #fff; */
-  /* font-family: 'montserrat', Helvetica, sans-serif; */
-  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 	display: flex;
 	justify-content: center;
@@ -313,62 +303,8 @@ header{
 }
 
 .headline {
-  /* font-size: 2rem;
-  text-transform: uppercase;
-  text-align: center; */
   margin: 0;
 }
-
-/* .circle-big {
-  position: relative;
-  width: 114px;
-  height: 114px;
-}
-
-.circle-big svg {
-  width: 114px;
-  height: 114px;
-}
-
-.circle-big .bg {
-  fill: none;
-  stroke-width: 10px;
-  stroke: #313035b0;
-} */
-
-/* .circle-big .progress {
-    fill: none;
-    stroke-width: 10px;
-    stroke: #21466b;
-    stroke-linecap: round;
-    stroke-dasharray: 327.13; 
-    /* stroke-dashoffset: 0;
-    transform: rotate(-90deg);
-    transform-origin: 50% 50%;
-    animation: big 1.5s ease-in-out; 
-  } */ 
-  /* .circle-big .progress {
-    fill: none;
-    stroke-width: 10px;
-    stroke: #21466b;
-    stroke-linecap: round;
-    /* stroke-dasharray: 327.13;  */
-    /* stroke-dasharray: 327.13; 
-    stroke-dashoffset: 327.13;
-    transform: rotate(-90deg);
-    transform-origin: 50% 50%;
-    animation: big 1.5s ease-in-out;
-} */ 
-
-/* .circle-big .progress {
-    fill: none;
-    stroke-width: 10px;
-    stroke: #21466b;
-    stroke-linecap: round;
-    transform: rotate(-90deg);
-    transform-origin: 50% 50%;
-    animation: big 1.5s ease-in-out forwards;
-} */
 
 .circle-big {
     position: relative;
@@ -399,12 +335,6 @@ header{
 }
 
 
-/* 
-.circle-big .progress.animate {
-    stroke-dashoffset: var(--offset);
-    animation: big 1.5s ease-in-out;
-} */
-
 .circle-big .text {
   position: absolute;
   width: 100%;
@@ -417,37 +347,7 @@ header{
 
 .circle-big .text .small {
   font-size: 14px;
-  /* color: #fff; */
 }
-
-/* @keyframes big {
-    from {
-        stroke-dashoffset: 327.13; /* Начальное значение для заполнения круга */
-    /* }
-    to {
-        stroke-dashoffset: calc(327.13 - (327.13 * var(--percentage) / 100)); /* Конечное значение, соответствующее пустому кругу */
-    /* }
-}  */
-
-
-/* @keyframes big {
-    from {
-        stroke-dashoffset: 327.13; /* Начальное значение для заполнения круга */
-    /* }
-    to {
-        stroke-dashoffset: 0; /* Конечное значение, соответствующее пустому кругу */
-    /* }
-} */ 
-
-
-/* @keyframes appear {
-	0%, 50% {
-		opacity: 0;
-	}
-	100% {
-		opacity: 1;
-	}
-} */
 
 .table-pay{
     display: grid;
@@ -580,6 +480,7 @@ header{
     margin-bottom: 10px;
     padding: 0 20px;
 }
+
 /* .date-calendar-teacher{
     grid-template-rows: repeat(2,1fr);
 } */

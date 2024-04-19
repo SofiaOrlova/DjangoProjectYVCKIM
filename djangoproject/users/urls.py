@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from users.views import Register, EmailVerify, MyLoginView, indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data, payments, profile, generate_group_journal, manager_document_dogovor, user_dogovor, generate_hour_group, kniga_vojden_users, kniga_vojden, document_instructor, instructor_lessons, manager_add_users_payments, add_user_payment
+from users.views import Register, EmailVerify, MyLoginView, indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data, payments, profile, generate_group_journal, manager_document_dogovor, user_dogovor, generate_hour_group, kniga_vojden_users, kniga_vojden, document_instructor, instructor_lessons, manager_add_users_payments, add_user_payment, send_message,  teacher_notice
 from . import views
 
 urlpatterns = [
@@ -34,6 +34,7 @@ urlpatterns = [
     path('user_profile/', user_profile, name='user_profile'),
     path('user_profile/teacher_dashboard/', teacher_dashboard),
     path('user_profile/teacher_notation/', teacher_notation),
+    path('user_profile/teacher_notice/', teacher_notice, name='teacher_notice'),
     path('user_profile/teacher_dashboard/delete_event/', delete_event, name='delete_event'),
    # path('student_dashboard/', TemplateView.as_view(template_name='student_dashboard.html'), name='student_dashboard'),
     path('user_profile/student_dashboard/', student_dashboard),
@@ -45,6 +46,7 @@ urlpatterns = [
     path('student_dashboard/<int:idInstructor>/appointment', views.appointment, name='appointment'),
     path('user_profile/manager_dashboard/', manager_dashboard),
     path('user_profile/manager_dashboard/confirm_users/', confirm_users, name='confirm_users'),
+    path('user_profile/teacher_notice/send_message/', send_message, name='send_message'),
     path('user_profile/manager_add_users_data/', manager_add_users_data, name='manager_add_users_data'),
     path('user_profile/manager_add_users_payments/', manager_add_users_payments, name='manager_add_users_payments'),
     path('user_profile/manager_add_users_payments/add_user_payment/<int:user_id>/', add_user_payment, name='add_user_payment'),
