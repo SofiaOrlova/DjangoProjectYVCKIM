@@ -34,6 +34,9 @@ from django.db.models import Q
 from django.db.models import Count
 import calendar
 from django.db.models import Sum
+from django.utils import timezone
+from datetime import timedelta
+from django.core.mail import send_mail
 
 from .models import Instructor
 from .models import Appointment, Instructor, Notation, UserData, Payments, Message
@@ -57,17 +60,12 @@ class EmailVerify(View):
             user.save()
             login(request, user)
 
-            # Проверьте роль пользователя и перенаправьте на соответствующую страницу личного кабинета
             if user.groups.filter(name='Преподаватель').exists():
                 return redirect('teacher_dashboard')
             elif user.groups.filter(name='Ученик').exists():
                 return redirect('student_dashboard')
-           # else user.groups.filter(name='Менеджер').exists():
             if user.groups.filter(name='Менеджер').exists():
                 return redirect('manager_dashboard')
-            #else:
-                #return redirect('invalid_role')  # Обработка случая, если у пользователя нет роли
-            #return redirect('home')
         return redirect('invalid_verify')
 
     @staticmethod
@@ -106,10 +104,6 @@ class Register(View):
         }
         return render(request, self.template_name, context)
     
-# class PasswordResetView(View):
-#     def get(self):
-#         return redirect('login')
-    
 
 def user_profile(request):
     if request.user.is_authenticated:
@@ -120,7 +114,7 @@ def user_profile(request):
         elif request.user.groups.filter(name='Менеджер').exists():
             return redirect('manager_dashboard/')
     else:
-        return redirect('login')  # Пользователь не вошел в систему
+        return redirect('login')  
     
 
 def student_dashboard(request):
@@ -133,7 +127,6 @@ def student_dashboard(request):
             'id': appointment.id,
             'date': appointment.date.strftime('%d'),
             'time': appointment.time.strftime('%H:%M:%S'),
-            # 'instructor': f"{appointment.instructor.second_name} {appointment.instructor.name} {appointment.instructor.surname}",
             'instructor': appointment.instructor.id,
         })
 
@@ -151,12 +144,8 @@ def student_pickDataTime(request):
     }
     return render(request, "student_pickDataTime.html", context)
 
-# def reset_done(request):
-#     return redirect('login')
 
-#Это робит--------------------
 def indexInstructor(request, idInstructor):
-    # Получение объекта инструктора по id
     item = Instructor.objects.get(id=idInstructor)
     
     return redirect('appointment', idInstructor=idInstructor)
@@ -182,15 +171,8 @@ def appointment(request, idInstructor):
 
             existing_appointment = Appointment.objects.filter(date=date, time=time, instructor=instructor).first()
             if existing_appointment:
-                # if existing_appointment.is_available:
-                #     existing_appointment.is_available = False
-                #     existing_appointment.student = request.user
-                #     existing_appointment.save()
-                #     return redirect('success_url')
-                # else:
                     return render(request, 'student_pickDataTime.html', {'form': form, 'error_message': 'Время уже занято.'})
             else:
-                # Присвоение инструктора к записи перед сохранением
                 appointment = form.save(commit=False)
                 appointment.instructor = instructor
                 appointment.is_available = False
@@ -199,7 +181,6 @@ def appointment(request, idInstructor):
                 appointment.save()
                 context = {'appointments': appointment}
                 return render(request, 'success_url.html', context)
-                # return redirect('success_url')
     else:
         form = AppointmentForm()
 
@@ -219,23 +200,20 @@ def get_available_times(request):
     selected_date = request.GET.get("date")
     instructor_id = request.GET.get("instructor_id")
     
-    # Фильтруйте доступное время на основе выбранной даты
     existing_appointments = Appointment.objects.filter(date=selected_date, instructor_id=instructor_id)
     occupied_times = [appointment.time.strftime('%H:%M') for appointment in existing_appointments if not appointment.is_available]
 
     
     available_times = ["08:00", "09:30", "11:00", "13:30", "15:00", "16:30"]
     
-    # Уберите недоступное (занятое) время из доступного времени
     available_times = [time for time in available_times if time not in occupied_times]
     
     return JsonResponse(available_times, safe=False)
 
 def schedule(request):
-    user_id = request.user.id  # Получаем id текущего пользователя
+    user_id = request.user.id  
     appointments = Appointment.objects.filter(student_id=user_id)
     
-    # Остальной код остается без изменений
     appointments_data = []
     for appointment in appointments:
         appointments_data.append({
@@ -258,7 +236,6 @@ def teacher_dashboard(request):
     
     appointments = Appointment.objects.filter(instructor_id=instructor_id)
     
-    # Остальной код остается без изменений
     appointments_data = []
     for appointment in appointments:
         appointments_data.append({
@@ -274,26 +251,6 @@ def teacher_dashboard(request):
     context = {'appointments_json': appointments_json, 'user_id': instructor_id}
     return render(request, 'teacher_dashboard.html', context)
 
-
-# @csrf_exempt
-# @require_POST
-# def delete_event(request):
-#     try:
-#         data = json.loads(request.body)
-#         event_id = data.get('event_id')
-
-#         if event_id is not None:
-#             # Ищем событие по ID и удаляем его из базы данных
-#             appointment = Appointment.objects.get(id=event_id)
-#             appointment.delete()
-
-#             return JsonResponse({'status': 'success'})
-#         else:
-#             return JsonResponse({'status': 'error', 'message': 'ID события не указан.'})
-
-#     except json.JSONDecodeError as e:
-#         return JsonResponse({'status': 'error', 'message': str(e)})
-
 @csrf_exempt
 @require_POST
 def delete_event(request):
@@ -303,7 +260,6 @@ def delete_event(request):
         event_time = data.get('event_time')
 
         if event_date is not None and event_time is not None:
-            # Ищем событие по дате и времени и удаляем его из базы данных
             appointment = Appointment.objects.filter(date=event_date, time=event_time)
             if appointment.exists():
                 appointment.delete()
@@ -337,15 +293,12 @@ def teacher_notation(request):
             if existing_appointment:
                     return render(request, 'teacher_notation.html', {'form': form, 'error_message': 'Время уже занято.'})
             else:
-                # Присвоение инструктора к записи перед сохранением
                 appointment = form.save(commit=False)
                 appointment.instructor = instructor
                 appointment.is_available = False
                 appointment.time = time
-                # Извлечение выбранного пользователя из radio button
                 selected_user_id = request.POST.get('user_radio')
                 selected_user = User.objects.get(id=selected_user_id)
-                # Присвоение выбранного пользователя к записи перед сохранением
                 appointment.student = selected_user
                 appointment.save()
                 context = {'appointments': appointment}
@@ -413,7 +366,6 @@ def confirm_users(request):
 def manager_add_users_data(request):
     group = Group.objects.get(id=2)
     users = User.objects.filter(email_verify=True, groups=group)
-    # users = User.objects.filter(email_verify=1) 
     return render(request, 'manager_add_users_data.html', {'users': users})
 
 
@@ -435,10 +387,8 @@ def add_user_data(request, user_id):
 
 
 def payments(request):
-    # users = User.objects.filter(email_verify=0) 
     user = request.user
     payments = Payments.objects.filter(user=user)
-    # full_price = payments.full_price
     total_payment = payments.aggregate(Sum('payment'))['payment__sum'] or 0
     return render(request, 'student_payments.html', {'payments': payments, 'total_payment': total_payment})
 
@@ -453,7 +403,7 @@ def add_user_payment(request, user_id):
     if request.method == 'POST':
         form = UserPaymentsForm(request.POST)
         if form.is_valid():
-            form.instance.user = user  # Устанавливаем пользователя для нового платежа
+            form.instance.user = user 
             form.save()
             return redirect('manager_add_users_payments')
     else:
@@ -464,28 +414,24 @@ def add_user_payment(request, user_id):
 def profile(request):
     user_id = request.user.id
     user = User.objects.get(id=user_id)
-    return render(request, 'student_profile.html', {'user': user})
+    two_weeks_ago = timezone.now() - timedelta(weeks=2)
+    
+    received_messages = Message.objects.filter(recipient=user, timestamp__gte=two_weeks_ago).order_by('-timestamp')
 
-# def manager_dashboard(request):
-#     users = User.objects.filter(email_verify=0) 
-#     return render(request, 'manager_dashboard.html', {'users': users})
+    return render(request, 'student_profile.html', {'user': user, 'received_messages': received_messages})
 
 
 def generate_group_journal(request):
     if request.method == 'POST':
         group_number = request.POST.get('group_number')
         
-        # Получение всех данных пользователей из модели UserData по указанной группе
         user_data_list = UserData.objects.filter(group_number=group_number)
 
         if user_data_list:
-            # Путь к пустому шаблону документа
             template_path = "group_journal.docx"
 
-            # Создаем новый документ на основе пустого шаблона
             doc = Document(template_path)
 
-            # Функция для установки шрифта и размера текста в ячейке
             def set_font_and_size(cell):
                 for paragraph in cell.paragraphs:
                     for run in paragraph.runs:
@@ -564,7 +510,6 @@ def generate_group_journal(request):
                 row_table3 = doc.tables[2].rows[i+3].cells
                 row_table3[0].text = str(i + 1)
                 set_font_and_size_without_center(row_table3[0])
-                # row_table3 = doc.tables[2].rows[i+3].cells
                 row_table3[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
                 set_font_and_size_without_center(row_table3[1])
 
@@ -636,7 +581,6 @@ def generate_group_journal(request):
             output_path = "filled_group_journal.docx"
             doc.save(output_path)
 
-            # Отправляем заполненный документ в ответе на запрос
             with open(output_path, 'rb') as docx_file:
                 response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
                 response['Content-Disposition'] = f'attachment; filename=filled_group_journal.docx'
@@ -654,7 +598,6 @@ def manager_document_dogovor(request):
     return render(request, 'manager_document_dogovor.html', {'users': users})
 
 def generate_docx(user):
-    # Загрузка шаблона docx документа
     doc = Document('dogovor_ob_obych_В.docx')
 
     user_data = user.userdata
@@ -668,7 +611,6 @@ def generate_docx(user):
                 'apartment': user_data.apartment if user_data.apartment else '',
             }
     
-    # Заполнение меток данными ученика
     for paragraph in doc.paragraphs:
         if "{{last_name}}" in paragraph.text:
             paragraph.text = paragraph.text.replace("{{last_name}}", user.last_name)
@@ -711,7 +653,6 @@ def generate_docx(user):
         if "{{phone}}" in paragraph.text:
             paragraph.text = paragraph.text.replace("{{phone}}", str(user.phone))
     
-    # Создание временного буфера для сохранения документа
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -722,50 +663,17 @@ def user_dogovor(request, user_id):
     print(user_id)
     user = get_object_or_404(User, id=user_id)
     
-    # Создание и заполнение docx документа
     docx_buffer = generate_docx(user)
     
-    # Отправка документа пользователю для скачивания
     response = HttpResponse(docx_buffer.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     response['Content-Disposition'] = 'attachment; filename="document.docx"'
     
     return response
 
-# def user_dogovor(request, user_id):
-#     if request.method == 'POST':
-#         # Обработка POST-запроса для генерации и отправки документа
-#         user_id = request.POST.get('user_id')
-#         if user_id:
-#             try:
-#                 user = User.objects.get(id=user_id)
-#                 doc = Document('dogovor_ob_obych_В.docx')
-
-#                 # Заполнение меток в документе
-#                 for paragraph in doc.paragraphs:
-#                     if 'last_name' in paragraph.text:
-#                         paragraph.text = paragraph.text.replace('last_name', user.last_name)
-#                     if 'first_name' in paragraph.text:
-#                         paragraph.text = paragraph.text.replace('first_name', user.first_name)
-#                     if 'surname' in paragraph.text:
-#                         paragraph.text = paragraph.text.replace('surname', user.surname)
-
-#                 # Генерация HTTP-ответа с содержимым документа
-#                 response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-#                 response['Content-Disposition'] = 'attachment; filename="договор_об_обучении.docx"'
-#                 doc.save(response)
-#                 return response
-#             except User.DoesNotExist:
-#                 return JsonResponse({'error': 'Пользователь с указанным ID не найден'}, status=404)
-#         else:
-#             return JsonResponse({'error': 'Не указан ID пользователя'}, status=400)
-#     else:
-#         # Если запрос не POST, вернуть ошибку метода неразрешенного доступа
-#         return JsonResponse({'error': 'Метод не разрешен'}, status=405)
 def generate_hour_group(request):
     if request.method == 'POST':
         group_number = request.POST.get('group_number')
         
-        # Получение всех данных пользователей из модели UserData по указанной группе
         user_data_list = UserData.objects.filter(group_number=group_number)
 
         def set_font(cell):
@@ -774,10 +682,8 @@ def generate_hour_group(request):
                         run.font.size = Pt(8)
 
         if user_data_list:
-            # Путь к пустому шаблону документа
             template_path = "накопительная_ведомость.docx"
 
-            # Создаем новый документ на основе пустого шаблона
             doc = Document(template_path)
 
             for paragraph in doc.paragraphs:
@@ -785,7 +691,6 @@ def generate_hour_group(request):
                     paragraph.text = paragraph.text.replace("{{group_number}}", group_number)
 
             
-            # Заполняем таблицу данными из базы данных
             for i, user_data in enumerate(user_data_list):
                 user = user_data.user
                 
@@ -798,21 +703,15 @@ def generate_hour_group(request):
                 row = doc.tables[0].rows[i+1].cells  
                 row[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
 
-                # Получаем все записи, связанные с пользователем как студентом
                 student_appointments = Appointment.objects.filter(student=user)
                 appointment_month = [str(appointment.date.month) for appointment in student_appointments]
                 appointment_day = [str(appointment.date.day) for appointment in student_appointments]
                 
-                # Преобразуем массив дат в строку, разделенную запятыми
                 appointment_dates_str = ', '.join(appointment_month)
-                # appointment_days = ', '.join(appointment_day)
                 
-                # Устанавливаем строку дат в соответствующую ячейку таблицы для текущего студента
                 if appointment_dates_str:
-                    # Заполняем каждую ячейку таблицы соответствующей датой из массива дат
                     for j, date in enumerate(appointment_month, start=2):
                         if j < 22: 
-                            # print(appointment_day[j-2]) # Заполняем только первые 20 ячеек
                             if date < '10':
                                 row[j].text = appointment_day[j-2] + '.' + '0' + date
                                 set_font(row[j])
@@ -855,7 +754,6 @@ def generate_hour_group(request):
 @require_POST
 def kniga_vojden_users(request):
     user_id = request.POST.get('user_id')  
-    # user = User.objects.filter(id__in=user_id)
     user = User.objects.get(id=user_id)
 
     instructor_id = request.POST.get('instructor_id')  
@@ -906,53 +804,26 @@ def kniga_vojden_users(request):
                     run.font.size = Pt(16) 
                     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
-        # row = doc.tables[4].rows[i+1].cells  
-        # table = doc.tables[4]
-        
-        # student_appointments = Appointment.objects.filter(student=user)
-        # appointment_month = [str(appointment.date.month) for appointment in student_appointments]
-        # appointment_day = [str(appointment.date.day) for appointment in student_appointments]
-        
-        # # Преобразуем массив дат в строку, разделенную запятыми
-        # appointment_dates_str = ', '.join(appointment_month)
-        # # appointment_days = ', '.join(appointment_day)
-        # row = table.rows[4].cells
-        # row[7].text = appointment_day[0] + '.' + '0' + appointment_month[0]
-        # print(len(table.columns))
-        # print( len(table.rows) > 0)
-        # # column_headers = table.rows[0].cells
-        # print(len(table.rows[0].cells) > 0)
-
-        # Получаем данные конкретного человека из базы данных
+       
         student_appointments = Appointment.objects.filter(student=user)
         appointment_dates = [f"{appointment.date.day}.{appointment.date.month}" for appointment in student_appointments]
         print(appointment_dates)
 
-        # Инициализируем индекс для обхода appointment_dates
         idx = 0
 
-        # Определяем счетчик таблиц
         table_count = 0
 
-        # Проходим по всем элементам в документе
         for element in doc.element.body:
-            # Проверяем, является ли элемент таблицей
             if element.tag.endswith('tbl'):
-                # Увеличиваем счетчик таблиц
                 table_count += 1
-                # Если это шестая таблица, ищем метку `{{date}}` и заменяем её
                 if table_count == 5:
-                    # Проходим по строкам таблицы
                     for row_idx, row in enumerate(element.findall('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tr')):
-                        # Проходим по ячейкам в строке
                         for cell_idx, cell in enumerate(row.findall('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}tc')):
-                            # Проходим по параграфам в ячейке
                             for paragraph in cell.findall('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}p'):
-                                # Проходим по текстовым элементам в параграфе
                                 for text_element in paragraph.findall('.//{http://schemas.openxmlformats.org/wordprocessingml/2006/main}t'):
                                     if "{{date}}" in text_element.text:
-                                        date_str = appointment_dates[0]  # appointment_dates[0] содержит строку "день.месяц"
-                                        date_parts = date_str.split('.')  # Разделяем строку на части (день и месяц)
+                                        date_str = appointment_dates[0]  
+                                        date_parts = date_str.split('.')  
                                         day = int(date_parts[0])
                                         month = int(date_parts[1])
                                         if month < 10:
@@ -961,38 +832,8 @@ def kniga_vojden_users(request):
                                             text_element.text = text_element.text.replace("{{date}}", appointment_dates[0])
                                             # set_font(row[j])
                                         # text_element.text = text_element.text.replace("{{date}}", appointment_dates[0])
-                                        # Удаляем первый элемент списка, так как он уже использован
                                         appointment_dates = appointment_dates[1:]
                                         
-
-        # Вызываем функцию поиска меток внутри таблиц
-        # find_date_labels()
-
-        # for cell in column_headers:
-        #     print(cell.text)
-        
-        # # Устанавливаем строку дат в соответствующую ячейку таблицы для текущего студента
-        # if appointment_dates_str:
-        #     # Заполняем каждую ячейку таблицы соответствующей датой из массива дат
-        #     for j, date in enumerate(appointment_month, start=2):
-        #         row = table.rows[j+2].cells
-        #         if j < 12: 
-        #             # print(appointment_day[j-2]) # Заполняем только первые 20 ячеек
-        #             if date < '10':
-        #                 row[4].text = appointment_day[j] + '.' + '0' + date
-        #                 # set_font(row[4])
-        #             else:
-        #                 row[4].text = appointment_day[j] + '.' + date 
-        #                 # set_font(row[j])
-        #         if j >= 12 and j < 16: 
-        #             row = table.rows[j+3].cells
-        #             if date < '10':
-        #                 row[4].text = appointment_day[j] + '.' + '0' + date
-        #                 # set_font(row_table2[j-20])
-        #             else:
-        #                 row[4].text = appointment_day[j] + '.' + date 
-        #                 # set_font(row_table2[j-20])
-        
         
         output_path = "книжка вождения " + user.last_name + user.first_name + ".docx"
         doc.save(output_path)
@@ -1015,8 +856,6 @@ def kniga_vojden(request):
     return render(request, 'manager_document_kniga_vojden.html', context)
 
 def document_instructor(request):
-    # group = Group.objects.get(id=2)
-    # users = User.objects.filter(email_verify=True, groups=group) 
     instructors = Instructor.objects.all()
 
     context = {'instructors': instructors}
@@ -1026,9 +865,6 @@ def document_instructor(request):
 
 @require_POST
 def instructor_lessons(request):
-    # user_id = request.POST.get('user_id')  
-    # # user = User.objects.filter(id__in=user_id)
-    # user = User.objects.get(id=user_id)
     month_number = request.POST.get('month_number') 
 
     instructor_id = request.POST.get('instructor_id')  
@@ -1096,3 +932,21 @@ def instructor_lessons(request):
             return response
         
     return render(request, 'manager_document_instructor.html')
+
+
+# def send_reminder_emails():
+#     # Получаем текущую дату
+#     current_date = timezone.now().date()
+    
+#     # Получаем список всех занятий, которые состоятся завтра
+#     tomorrow_appointments = Appointment.objects.filter(date=current_date + timedelta(days=1))
+    
+#     for appointment in tomorrow_appointments:
+#         # Отправляем уведомление студенту
+#         send_mail(
+#             'Напоминание о занятии',
+#             f'Завтра, {appointment.date}, в {appointment.time} у вас запланировано занятие с инструктором {appointment.instructor}.',
+#             'your_email@yandex.ru',
+#             [appointment.student.email],
+#             fail_silently=False,
+#         )

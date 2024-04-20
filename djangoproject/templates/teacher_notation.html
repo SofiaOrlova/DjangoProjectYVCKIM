@@ -109,18 +109,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Инициализация Flatpickr с дополнительными опциями
             flatpickr("#id_date", {
-                minDate: "today",  // Минимальная дата
-                maxDate: new Date().fp_incr(60),  // Максимальная дата (через 2 месяца)
+                minDate: "today",  
+                maxDate: new Date().fp_incr(60),  
                 disable: [
                     function(date) {
-                        // Выключите воскресенье (нумерация дней недели начинается с 0)
                         return date.getDay() === 0;
                     }
                 ],
-                dateFormat: "Y-m-d",  // Формат даты
-                // locale: "ru",  // Указываем код языка для русской локализации
+                dateFormat: "Y-m-d",  
                 locale: {
                     firstDayOfWeek: 1,
                     weekdays: {
@@ -132,8 +129,8 @@
                     longhand: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
                     },
                 },
-                static: true, // Делаем календарь статическим (без выпадающего виджета)
-                appendTo: document.getElementById("appointment-form") // Добавляем календарь внутрь формы
+                static: true, 
+                appendTo: document.getElementById("appointment-form") 
 
             });
         });
@@ -169,7 +166,6 @@
             fetch("/users/get_available_times/?date=" + selectedDate + "&instructor_id=" + instructorId)
                 .then((response) => response.json())
                 .then((data) => {
-                    // Создайте блоки для каждого доступного времени
                     data.forEach(function (time) {
                         var timeBlock = document.createElement("div");
                         timeBlock.className = "time-block";
@@ -179,10 +175,8 @@
                             document.getElementById("id_time").value = time;
                             console.log(document.getElementById("id_time").value);
 
-                            // Создание блоков времени
                             timeBlocks = document.querySelectorAll('.time-block');
 
-                            // Снимаем класс со всех элементов
                             timeBlocks.forEach(function (otherTimeBlock) {
                                 if (otherTimeBlock !== timeBlock) {
                                     otherTimeBlock.classList.remove('clicked');

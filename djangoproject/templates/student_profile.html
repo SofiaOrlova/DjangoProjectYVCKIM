@@ -24,20 +24,23 @@
 
             
             <div class="title-toasts">Полученные уведомления от инструктора: </div>
-            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="toast-header">
-                  <strong class="me-auto">Фамилия Имя Отчество</strong>
-                  <small>05.02.2024</small>
-                  <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-                <div class="toast-body">
-                  Здравствуйте, завтра начинаем занятие в городе.
-                </div>
+            <div class="toasts">
+              {% for message in received_messages %}
+              <div class="toast" aria-live="assertive" aria-atomic="true">
+                  <div class="toast-header">
+                      <strong class="me-auto">{{ message.sender.get_full_name }}</strong>
+                      <small>{{ message.timestamp|date:"d.m.Y" }}</small>
+                      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+                  <div class="toast-body">
+                      {{ message.body }}
+                  </div>
               </div>
+              {% endfor %}
+            </div>
+            
     
         </div>
-
-        
     
         
     </div>

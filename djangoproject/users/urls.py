@@ -3,6 +3,7 @@ from django.views.generic import TemplateView
 
 from users.views import Register, EmailVerify, MyLoginView, indexInstructor, student_dashboard, user_profile, schedule, teacher_dashboard, delete_event, teacher_notation, manager_dashboard, confirm_users, manager_add_users_data, add_user_data, payments, profile, generate_group_journal, manager_document_dogovor, user_dogovor, generate_hour_group, kniga_vojden_users, kniga_vojden, document_instructor, instructor_lessons, manager_add_users_payments, add_user_payment, send_message,  teacher_notice
 from . import views
+from . import tasks
 
 urlpatterns = [
 
@@ -63,3 +64,5 @@ urlpatterns = [
     path('user_profile/manager_document_kniga_vojden/kniga_vojden_users', kniga_vojden_users, name='kniga_vojden_users'),
     path('user_profile/manager_document_instructor/instructor_lessons', instructor_lessons, name='instructor_lessons'),
 ]
+
+# tasks.daily_reminder(repeat=24*60*60) 

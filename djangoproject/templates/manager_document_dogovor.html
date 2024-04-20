@@ -120,15 +120,10 @@
   </main>
   
 
-  <!-- jQuery -->
   <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>
-  <!-- Bootstrap tooltips -->
   <script type="text/javascript" src="{% static 'js/popper.min.js' %}"></script>
-  <!-- Bootstrap core JavaScript -->
   <script type="text/javascript" src="{% static 'js/bootstrap.min.js' %}"></script>
-  <!-- MDB core JavaScript -->
   <script type="text/javascript" src="{% static 'js/mdb.min.js' %}"></script>
-  <!-- Your custom scripts (optional) -->
   <script>
     let rad = document.querySelectorAll('.form-check-input');
     let but = document.querySelector('.btn-users');
@@ -137,7 +132,7 @@
       elem.addEventListener('click', function(event){
         let tekid = this.getAttribute('data-user-id');
         console.log(tekid);
-        but.setAttribute('data-user-id', tekid); // Это не требуется, так как мы будем отправлять AJAX-запрос
+        but.setAttribute('data-user-id', tekid); 
       });
     });
 
@@ -147,10 +142,9 @@
       let user_id = this.getAttribute('data-user-id');
       console.log("User ID:", user_id);
 
-      // Отправляем AJAX-запрос на сервер
       let xhr = new XMLHttpRequest();
       xhr.open("GET", `user_dogovor/${user_id}/`);
-      xhr.responseType = 'blob'; // Устанавливаем тип ответа как Blob
+      xhr.responseType = 'blob'; 
       xhr.onload = function(event) {
         if (xhr.status === 200) {
           let blob = xhr.response;
@@ -163,9 +157,6 @@
       xhr.send();
     });
   </script>
-
-
-
 
 </body>
 </html>

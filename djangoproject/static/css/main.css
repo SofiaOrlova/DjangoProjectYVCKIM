@@ -224,7 +224,7 @@ header{
     left: 50% !important;
     transform: translateX(-50%);
     z-index: 1000000 !important; 
-    margin-top: 70px !important;
+    margin-top: 0px !important;
 } 
 
 .flatpickr-wrapper{
@@ -402,7 +402,12 @@ header{
 .toast{
     margin: 0 auto;
     width: 450px;
-    
+    margin-bottom: 15px;
+}
+
+.toasts{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
 
 .me-auto{

@@ -43,26 +43,21 @@
         {% endif %}
     </div>
 
-    <!-- Ссылка на CDN Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-      <!-- Ссылка на CDN Flatpickr и дополнительные опции  -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>  
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Инициализация Flatpickr с дополнительными опциями
             flatpickr("#id_date", {
-                minDate: "today",  // Минимальная дата
-                maxDate: new Date().fp_incr(60),  // Максимальная дата (через 2 месяца)
+                minDate: "today",  
+                maxDate: new Date().fp_incr(60), 
                 disable: [
                     function(date) {
-                        // Выключите воскресенье (нумерация дней недели начинается с 0)
                         return date.getDay() === 0;
                     }
                 ],
-                dateFormat: "Y-m-d",  // Формат даты
-                // locale: "ru",  // Указываем код языка для русской локализации
+                dateFormat: "Y-m-d", 
                 locale: {
                     firstDayOfWeek: 1,
                     weekdays: {
@@ -79,15 +74,11 @@
         });
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Найдем элемент с классом "flatpickr-calendar"
             var flatpickrCalendar = document.querySelector('.flatpickr-calendar');
             var flatpickrCalendars = document.querySelectorAll('.flatpickr-calendar');
 
-            // Проверим, что элемент существует, прежде чем добавлять класс
             if (flatpickrCalendar) {
-                // Добавим класс "open"
                 flatpickrCalendar.classList.add('open');
-                // flatpickrCalendar.classList.add('animate');
                 flatpickrCalendar.classList.add('arrowTop');
                 flatpickrCalendar.classList.add('arrowLeft');
                 console.log("class");
@@ -96,7 +87,6 @@
                 flatpickrCalendar.style.right = 'auto';
                 console.log("style");
                 if (flatpickrCalendars.length > 0) {
-                    // Получим последний элемент
                     var lastFlatpickrCalendar = flatpickrCalendars[flatpickrCalendars.length - 1];
                     lastFlatpickrCalendar.remove();
                 }
@@ -115,16 +105,13 @@
         document.getElementById("id_date").addEventListener("change", function () {
             var selectedDate = this.value;
             var timeButtons = document.getElementById("time-buttons");
-            timeButtons.innerHTML = ""; // Очистите текущие блоки времени
+            timeButtons.innerHTML = ""; 
 
-            // Получение id инструктора из текущего URL
             var instructorId = extractInstructorIdFromURL();            
 
-            // Отправьте AJAX-запрос на сервер, чтобы получить доступное время для выбранной даты и инструктора
             fetch("/users/get_available_times/?date=" + selectedDate + "&instructor_id=" + instructorId)
                 .then((response) => response.json())
                 .then((data) => {
-                    // Создайте блоки для каждого доступного времени
                     data.forEach(function (time) {
                         var timeBlock = document.createElement("div");
                         timeBlock.className = "time-block";
@@ -134,10 +121,8 @@
                             document.getElementById("id_time").value = time;
                             console.log(document.getElementById("id_time").value);
 
-                            // Создание блоков времени
                             timeBlocks = document.querySelectorAll('.time-block');
 
-                            // Снимаем класс со всех элементов
                             timeBlocks.forEach(function (otherTimeBlock) {
                                 if (otherTimeBlock !== timeBlock) {
                                     otherTimeBlock.classList.remove('clicked');
@@ -152,7 +137,6 @@
                 });
         });
 
-    // Функция для извлечения id инструктора из текущего URL
         function extractInstructorIdFromURL() {
             var path = window.location.pathname;
             var matches = path.match(/\/student_dashboard\/(\d+)\/appointment/);
