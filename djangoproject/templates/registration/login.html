@@ -1,55 +1,69 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% if form.errors %}
-        <p>{{ form.errors.error }}</p>
-    {% endif %}
-
     {% load static %}
-    <!-- {{form}} -->
-    <div class="row justify-content-center">
+    <div class="justify-content-center form">
         <div class="col-md-6 col-lg-5">
             <div class="login-wrap p-4 p-md-5">
                 <div class="icon">
                     <img src="{% static 'img/icon.png' %}" alt="icon" class="mx-auto icon-img">
                 </div>
                 <h3 class="text-center mb-4">Пожалуйста, войдите</h3>
-                <form action="{% url 'login' %}" method="post" class="login-form">
+                <form method="post" class="login-form">
+                    <!-- {{form}} -->
                     {% csrf_token %}
                     <div class="input-login">
                         <label class="form-label" for="{{form.username.id_for_label}}">Email</label>
-                        {{form.username}}
-                        {{form.username.errors}}
+                        <!-- {{form.username}} -->
+                        <input type="email" name="username" id="id_username" required>
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
                     </div>
                        
                     <div class="input-login">
                         <label class="form-label" for="{{form.password.id_for_label}}">Пароль</label>
-                        {{form.password}}
-                        {{form.password.errors}}
+                        <!-- {{form.password}} -->
+                        <input type="password" name="password" id="id_password" required>
+                        {% for error in form.password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
                     </div>
 
                     <div class="form-group d-flex">
-                        <div class="w-50">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                                <label class="form-check-label" for="flexCheckDefault">
-                                    Запомнить меня
-                                </label>
-                              </div>
-                        </div>
-                        <div class="w-50 text-md-right">
+                        <div class="text-md-right">
                             <a href="{% url 'password_reset' %}">Забыли пароль?</a>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <button type="submit" class="btn btn-blue submit rounded p-3 px-5"> Войти </button>
+                        <button type="submit" id="login-button" class="btn btn-blue submit rounded p-3 px-5"> Войти </button>
                     </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger errors">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     
                 </form>
             </div>
         </div>
     </div>
+
+    
+
+    <!-- {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        {% endfor %}
+    {% endif %} -->
+
     
 
     <!-- <form action="{% url 'login' %}" method="post">

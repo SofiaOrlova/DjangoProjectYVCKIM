@@ -44,22 +44,43 @@ class AuthenticationForm(DjangoAuthenticationForm):
         return self.cleaned_data
 
 
+# class UserCreationForm(DjangoUserCreationForm):
+#     email = forms.EmailField(
+#         label = ("Email"),
+#         max_length=254,
+#         widget=forms.EmailInput(attrs={'autocomplete': 'email'})
+#     )
+#     first_name = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
+#     last_name = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
+#     surname = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
+#     username = forms.CharField(required=False)
+#     email = forms.CharField(widget=forms.EmailInput(attrs={ 'class': 'form-control' }))
+#     phone = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
+        
+#     class Meta(DjangoUserCreationForm.Meta):
+#         model = User
+#         fields = ("first_name", "last_name", "surname", "email", "phone")
+
+#     def clean_username(self):
+#         # Устанавливаем username как email
+#         email = self.cleaned_data['email']
+#         return email
+    
 class UserCreationForm(DjangoUserCreationForm):
     email = forms.EmailField(
-        label = ("Email"),
+        label=_('Email'),
         max_length=254,
         widget=forms.EmailInput(attrs={'autocomplete': 'email'})
     )
-    first_name = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
-    last_name = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
-    surname = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
-    # username = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
-    email = forms.CharField(widget=forms.EmailInput(attrs={ 'class': 'form-control' }))
-    phone = forms.CharField(widget=forms.TextInput(attrs={ 'class': 'form-control' }))
-        
+    first_name = forms.CharField(label=_('First name'), max_length=30, required=False)
+    last_name = forms.CharField(label=_('Last name'), max_length=150, required=False)
+    surname = forms.CharField(label=_('Surname'), max_length=255, required=False)
+    username = forms.CharField(required=False)
+    phone = forms.CharField(label=_('Phone'), max_length=255, required=False)
+
     class Meta(DjangoUserCreationForm.Meta):
         model = User
-        fields = ("first_name", "last_name", "surname", "email", "phone")
+        fields = ('email', 'first_name', 'last_name', 'surname', 'phone', 'username')
 
 
 available_times = [

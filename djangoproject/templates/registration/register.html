@@ -10,7 +10,7 @@
     </form> -->
 
     {% load static %}
-    <div class="row justify-content-center">
+    <div class="justify-content-center form">
         <div class="col-md-6 col-lg-5">
             <div class="login-wrap p-4 p-md-5">
                 <div class="icon">
@@ -22,26 +22,39 @@
                     <div class="input-login">
                         <label class="form-label" for="{{form.first_name.id_for_label}}">Имя</label>
                         {{form.first_name}}
+                        {% for error in form.first_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
                     </div>
-                    {{form.username.errors}}
 
                     <div class="input-login">
                         <label class="form-label" for="{{form.last_name.id_for_label}}">Фамилия</label>
                         {{form.last_name}}
+                        {% for error in form.last_name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
                     </div>
-                    {{form.username.errors}}
 
                     <div class="input-login">
                         <label class="form-label" for="{{form.last_name.id_for_label}}">Отчество</label>
                         {{form.surname}}
+                        {% for error in form.surname.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
                     </div>
                     {{form.surname.errors}}
 
-                    <!-- <div class="input-login">
+                    <div class="input-login">
                         <label class="form-label" for="{{form.username.id_for_label}}">Логин</label>
                         {{form.username}}
                     </div>
-                    {{form.username.errors}} -->
+                    {{form.username.errors}}
+
+                    <div class="input-login">
+                        <label class="form-label" for="{{form.phone.id_for_label}}">Телефон</label>
+                        {{form.phone}}
+                    </div>
+                    {{form.phone.errors}}
 
                     <div class="input-login">
                         <label class="form-label" for="{{form.email.id_for_label}}">Email</label>

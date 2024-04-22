@@ -37,6 +37,7 @@ from django.db.models import Sum
 from django.utils import timezone
 from datetime import timedelta
 from django.core.mail import send_mail
+from django.db import IntegrityError
 
 from .models import Instructor
 from .models import Appointment, Instructor, Notation, UserData, Payments, Message
@@ -93,12 +94,18 @@ class Register(View):
         form = UserCreationForm(request.POST)
 
         if form.is_valid():
+            # try:
             form.save()
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password1')
             user = authenticate(email=email, password=password)
             send_email_for_verify(request, user)
             return redirect('confirm_email')
+            # except IntegrityError:
+            #     form.add_error('username', 'Такой пользователь уже существует.')
+        else:
+            print(form.errors)
+
         context = {
             'form': form 
         }
@@ -741,7 +748,7 @@ def generate_hour_group(request):
 
             with open(output_path, 'rb') as docx_file:
                 response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-                new_filename = 'накопительная_ведомостьfill.docx'
+                new_filename = "накопительная_ведомость№"+group_number+".docx"
                 response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
                 return response
                 

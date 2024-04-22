@@ -7,13 +7,9 @@ body{
     color: gray;
 }
 
-.row{
+.form{
     display: flex;
     flex-wrap: wrap;
-}
-
-.justify-content-center{
-    justify-content: center !important;
 }
 
 .login-wrap{
@@ -79,8 +75,9 @@ body{
     color: #162256;
 }
 
-.text-md-right {
-    text-align: right;
+.d-flex{
+    justify-content: end;
+    margin-bottom: 10px;
 }
 
 .input-login input{
@@ -122,5 +119,9 @@ body{
 .form-group .submit{
     margin: 0 auto;
     width: 100%;
+    margin-top: 15px;
+}
+
+.errors{
     margin-top: 15px;
 }
