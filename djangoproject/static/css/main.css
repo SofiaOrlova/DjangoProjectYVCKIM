@@ -233,10 +233,21 @@ header{
 }
 
 #time-buttons{
+    margin-top: 330px;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+#time-buttons-teacher{
     margin-top: 280px;
     display: flex;
     justify-content: space-between;
     margin-bottom: 15px;
+}
+
+.time-buttons-student{
+    margin-top: 330px;
 }
 
 .time-block{
@@ -254,9 +265,10 @@ header{
     background-color: #bfb8d1c2;
 }
 
-/* .btn-note{
-    margin-top: 10px;
-} */
+.btn-note{
+    width: 298px;
+    margin: 0 auto;
+}
 
 .date-title{
     text-align: center;

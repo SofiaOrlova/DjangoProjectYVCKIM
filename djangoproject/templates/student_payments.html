@@ -14,7 +14,7 @@
                 <div>
                     <div class="table-pay">
                         <div class="pay-info">
-                            <div class="pay-now">Полная оплата обучения составляет: <span class="full">{{payments.0.full_price}}</span> р.</div>
+                            <div class="pay-now">Полная оплата обучения составляет: <span class="full">20000</span> р.</div>
                             <div class="pay-balance">Осталось оплатить: <span class="left">{{total_payment}}</span> р.</div>
                         </div>
                         
@@ -59,7 +59,10 @@
 
     <script>
         var fullPrice = document.querySelector(".full").innerHTML;
-        var leftPrice = document.querySelector(".left").innerHTML;
+        console.log(fullPrice);
+        var leftPrice = '{{total_payment}}';
+        console.log(leftPrice);
+
         var totalPaymentPercent = parseInt((parseFloat(leftPrice)*100)/parseFloat(fullPrice));
         console.log(totalPaymentPercent)
 
@@ -75,7 +78,12 @@
         circle.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
         circle.style.strokeDashoffset = offset;
 
-        document.getElementById('payment_percent').innerText = totalPaymentPercent;
+        if(leftPrice == 20000){
+            document.getElementById('payment_percent').innerText = 0;
+        }
+        else{
+            document.getElementById('payment_percent').innerText = totalPaymentPercent;
+        }
 
     </script>
 

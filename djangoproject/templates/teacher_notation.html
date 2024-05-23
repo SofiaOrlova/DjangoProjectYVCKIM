@@ -78,7 +78,11 @@
                 <p>Нет пользователей</p>
             {% endif %}
 
-            <div class="date-calendar date-calendar-teacher">
+            {% if error_message %}
+                <div class="alert alert-danger">{{ error_message }}</div>
+            {% endif %}
+
+            <div class="date-calendar">
 
                 <div class="date-title date-title-teacher">Укажите дату вождения:</div>
                 {{ form.date }}
@@ -91,7 +95,7 @@
                 </div>
 
         
-                <div id="time-buttons">
+                <div id="time-buttons-teacher">
                     
                 </div>
                 
@@ -157,7 +161,7 @@
 
         document.getElementById("id_date").addEventListener("change", function () {
             var selectedDate = this.value;
-            var timeButtons = document.getElementById("time-buttons");
+            var timeButtons = document.getElementById("time-buttons-teacher");
             timeButtons.innerHTML = ""; 
 
             var instructorId = extractInstructorId();

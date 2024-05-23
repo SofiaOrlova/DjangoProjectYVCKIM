@@ -40,7 +40,7 @@ from django.core.mail import send_mail
 from django.db import IntegrityError
 
 from .models import Instructor
-from .models import Appointment, Instructor, Notation, UserData, Payments, Message
+from .models import Appointment, Instructor, Notation, UserData, Payments, Message, UserGroups
 from .forms import AppointmentForm, UserPaymentsForm
 from django.shortcuts import get_object_or_404
 
@@ -99,6 +99,7 @@ class Register(View):
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password1')
             user = authenticate(email=email, password=password)
+            # UserGroups.objects.create(user_id=user, group_id='2')
             send_email_for_verify(request, user)
             return redirect('confirm_email')
             # except IntegrityError:
@@ -296,6 +297,15 @@ def teacher_notation(request):
             date = form.cleaned_data['date']
             time = request.POST.get('time')
 
+            selected_user_id = request.POST.get('user_radio')
+
+            if not selected_user_id:
+                return render(request, 'teacher_notation.html', {
+                    'form': form, 
+                    'users': users_sorted, 
+                    'error_message': 'Пожалуйста, выберите ученика.'
+                })
+
             existing_appointment = Appointment.objects.filter(date=date, time=time, instructor=instructor_id).first()
             if existing_appointment:
                     return render(request, 'teacher_notation.html', {'form': form, 'error_message': 'Время уже занято.'})
@@ -381,6 +391,7 @@ def add_user_data(request, user_id):
     user_data, created = UserData.objects.get_or_create(user=user)
 
     formatted_date = user_data.date_of_birth.strftime('%Y-%m-%d') if user_data.date_of_birth else None
+    formatted_date_passport = user_data.passport_date.strftime('%Y-%m-%d') if user_data.passport_date else None
 
     if request.method == 'POST':
         form = UserDataForm(request.POST, instance=user_data)
@@ -390,13 +401,14 @@ def add_user_data(request, user_id):
     else:
         form = UserDataForm(instance=user_data)
 
-    return render(request, 'add_user_data.html', {'user': user, 'form': form, 'formatted_date': formatted_date})
+    return render(request, 'add_user_data.html', {'user': user, 'form': form, 'formatted_date': formatted_date, 'formatted_date_passport': formatted_date_passport})
 
 
 def payments(request):
     user = request.user
     payments = Payments.objects.filter(user=user)
-    total_payment = payments.aggregate(Sum('payment'))['payment__sum'] or 0
+    left_payment = payments.aggregate(Sum('payment'))['payment__sum'] or 20000
+    total_payment = 20000 - left_payment
     return render(request, 'student_payments.html', {'payments': payments, 'total_payment': total_payment})
 
 def manager_add_users_payments(request):
@@ -585,18 +597,21 @@ def generate_group_journal(request):
                     break 
 
             
-            output_path = "filled_group_journal.docx"
+            output_path = "журнал_группы_№" + group_number +".docx"
+            
             doc.save(output_path)
 
             with open(output_path, 'rb') as docx_file:
                 response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-                response['Content-Disposition'] = f'attachment; filename=filled_group_journal.docx'
+                new_filename = "журнал_группы_№" + group_number +".docx"
+                response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
                 return response
                 
         else:
             return HttpResponse("Пользователи с указанной группой не найдены")
 
     return render(request, 'manager_documents.html')
+
 
 def manager_document_dogovor(request):
     # users = User.objects.filter(email_verify=1) & User.objects.filter(Group.objects.get(id=2))
@@ -659,7 +674,6 @@ def generate_docx(user):
             paragraph.text = paragraph.text.replace("{{apartment}}", context['apartment'] )
         if "{{phone}}" in paragraph.text:
             paragraph.text = paragraph.text.replace("{{phone}}", str(user.phone))
-    
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -673,7 +687,9 @@ def user_dogovor(request, user_id):
     docx_buffer = generate_docx(user)
     
     response = HttpResponse(docx_buffer.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    response['Content-Disposition'] = 'attachment; filename="document.docx"'
+    new_filename = "договор_об_обучении_В_" + user.last_name +".docx"
+    # response['Content-Disposition'] = 'attachment; filename="document.docx"'
+    response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
     
     return response
 
@@ -719,14 +735,14 @@ def generate_hour_group(request):
                 if appointment_dates_str:
                     for j, date in enumerate(appointment_month, start=2):
                         if j < 22: 
-                            if date < '10':
+                            if date != "10" and date != "11" and date != "12":
                                 row[j].text = appointment_day[j-2] + '.' + '0' + date
                                 set_font(row[j])
                             else:
                                 row[j].text = appointment_day[j-2] + '.' + date 
                                 set_font(row[j])
                         if j >= 22 and j < 30: 
-                            if date < '10':
+                            if date != "10" and date != "11" and date != "12":
                                 row_table2 = doc.tables[1].rows[i+1].cells
                                 row_table2[j-20].text = appointment_day[j-2] + '.' + '0' + date
                                 set_font(row_table2[j-20])
@@ -743,7 +759,7 @@ def generate_hour_group(request):
 
 
             
-            output_path = "накопительная_ведомостьfill.docx"
+            output_path = "накопительная_ведомость.docx"
             doc.save(output_path)
 
             with open(output_path, 'rb') as docx_file:
@@ -847,7 +863,7 @@ def kniga_vojden_users(request):
 
         with open(output_path, 'rb') as docx_file:
             response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-            new_filename = "книжка вождения Орлова " + user.last_name + ".docx"
+            new_filename = "книжка вождения" + user.last_name + ".docx"
             response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
             return response
         

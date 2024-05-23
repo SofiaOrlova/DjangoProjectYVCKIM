@@ -140,8 +140,8 @@ EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 
-EMAIL_HOST_USER = 'orlowa.sony@ya.ru'
-EMAIL_HOST_PASSWORD = 'zstvqnuvuseyvrfi'
+EMAIL_HOST_USER = 'admin@yvc-kim.ru'
+EMAIL_HOST_PASSWORD = 'wznjbkbyvcxeareu'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER

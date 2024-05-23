@@ -37,7 +37,7 @@ class AuthenticationForm(DjangoAuthenticationForm):
             if not self.user_cache.email_verify:
                 send_email_for_verify(self.request, self.user_cache)
                 raise ValidationError(
-                    'Email not verify, check your email',
+                    'Менеджер еще не подтвердил ваш аккаунт',
                     code='invalid_login',
                 )
 

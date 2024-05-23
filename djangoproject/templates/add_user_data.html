@@ -90,8 +90,9 @@
                         </div>
                         <div class="input-add-data">
                           <label class="form-label" for="{{form.passport_date.id_for_label}}">Дата выдачи паспорта</label>
-                          {{form.passport_date}}
-                          {{form.passport_date.errors}}
+                          <!-- {{form.passport_date}}
+                          {{form.passport_date.errors}} -->
+                          <input type="date" name="passport_date" id="id_date_passport">
                         </div>
                         <div class="input-add-data">
                             <label class="form-label" for="{{form.group_number.id_for_label}}">Номер группы</label>
@@ -160,23 +161,25 @@
   <script type="text/javascript" src="{% static 'js/mdb.min.js' %}"></script>
   <script>
     var user_data_date_of_birth = '{{ formatted_date }}';
-    console.log(user_data_date_of_birth)
-
     var date_components = user_data_date_of_birth.split('-');
-    console.log(date_components)
-
     var formatted_date_of_birth = date_components[1] + '.' + date_components[2] + '.' + date_components[0];
-    console.log(formatted_date_of_birth)
-
     var date = new Date(Date.UTC(date_components[0], date_components[1] - 1, date_components[2]));
-    console.log(date)
 
     document.getElementById('id_date_of_birth').valueAsDate = date;
+
+    var user_data_date_passport = '{{ formatted_date_passport }}';
+    var date_components_passport = user_data_date_passport.split('-');
+    var formatted_date_passport = date_components_passport[1] + '.' + date_components_passport[2] + '.' + date_components_passport[0];
+    var date_passport = new Date(Date.UTC(date_components_passport[0], date_components_passport[1] - 1, date_components_passport[2]));
+
+    document.getElementById('id_date_passport').valueAsDate = date_passport;
 
     window.onload = function() {
       setTimeout(function() {
           let inputdb = document.getElementById('id_date_of_birth');
           inputdb.style.setProperty('color', '#000000c4', 'important');
+          let inputdb_passport = document.getElementById('id_date_passport');
+          inputdb_passport.style.setProperty('color', '#000000c4', 'important');
       }, 100);
     };
 
