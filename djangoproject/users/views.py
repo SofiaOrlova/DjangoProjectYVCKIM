@@ -382,7 +382,7 @@ def confirm_users(request):
 
 def manager_add_users_data(request):
     group = Group.objects.get(id=2)
-    users = User.objects.filter(email_verify=True, groups=group)
+    users = User.objects.filter(email_verify=True, groups=group).order_by('last_name')
     return render(request, 'manager_add_users_data.html', {'users': users})
 
 
@@ -413,7 +413,7 @@ def payments(request):
 
 def manager_add_users_payments(request):
     group = Group.objects.get(id=2)
-    users = User.objects.filter(email_verify=True, groups=group)
+    users = User.objects.filter(email_verify=True, groups=group).order_by('last_name')
     return render(request, 'add_users_payments.html', {'users': users})
 
 def add_user_payment(request, user_id):
@@ -433,9 +433,9 @@ def add_user_payment(request, user_id):
 def profile(request):
     user_id = request.user.id
     user = User.objects.get(id=user_id)
-    two_weeks_ago = timezone.now() - timedelta(weeks=2)
+    four_weeks_ago = timezone.now() - timedelta(weeks=4)
     
-    received_messages = Message.objects.filter(recipient=user, timestamp__gte=two_weeks_ago).order_by('-timestamp')
+    received_messages = Message.objects.filter(recipient=user, timestamp__gte=four_weeks_ago).order_by('-timestamp')
 
     return render(request, 'student_profile.html', {'user': user, 'received_messages': received_messages})
 
@@ -616,7 +616,7 @@ def generate_group_journal(request):
 def manager_document_dogovor(request):
     # users = User.objects.filter(email_verify=1) & User.objects.filter(Group.objects.get(id=2))
     group = Group.objects.get(id=2)
-    users = User.objects.filter(email_verify=True, groups=group)
+    users = User.objects.filter(email_verify=True, groups=group).order_by('last_name')
     return render(request, 'manager_document_dogovor.html', {'users': users})
 
 def generate_docx(user):
@@ -782,9 +782,6 @@ def kniga_vojden_users(request):
     instructor_id = request.POST.get('instructor_id')  
     instructor = Instructor.objects.get(id__in=instructor_id)
 
-    print(user)
-    print(instructor)
-
     if instructor_id:
 
         if (instructor_id == '1') : 
@@ -871,7 +868,7 @@ def kniga_vojden_users(request):
 
 def kniga_vojden(request):
     group = Group.objects.get(id=2)
-    users = User.objects.filter(email_verify=True, groups=group) 
+    users = User.objects.filter(email_verify=True, groups=group).order_by('last_name')
     instructors = Instructor.objects.all()
 
     context = {'users': users, 'instructors': instructors}

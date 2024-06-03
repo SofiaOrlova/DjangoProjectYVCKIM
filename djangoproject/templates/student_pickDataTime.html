@@ -5,7 +5,6 @@
     <div class="container">
         <div>
             <h4 class="title-client title-pick">Выбранный инструктор</h4>
-            <!-- <p>{{item.second_name}} {{item.name}} {{item.surname}}</p> <br> -->
             <div id="instructor-name"></div>
 
     
@@ -13,11 +12,6 @@
 
         <form method="post" id="appointment-form">
             {% csrf_token %}
-    
-            <!-- {{ form.date.label_tag }} -->
-            <!-- <div class="date-calendar">
-                <input type="text" name="date" id="id_date" />
-            </div> -->
             <div class="date-calendar">
                 <div class="date-title">Выберите удобную дату вождения</div>
                 {{ form.date }}
@@ -30,7 +24,7 @@
                 </div>
         
                 <div id="time-buttons" class="time-buttons-student">
-                    <!-- Создайте блоки или кнопки для времени здесь -->
+                    <!-- кнопки для времени -->
                 </div>
                 
                 <input type="submit" value="Записаться" class="btn btn-primary">
@@ -49,6 +43,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var dateInput = document.getElementById("id_date");
             flatpickr("#id_date", {
                 minDate: "today",  
                 maxDate: new Date().fp_incr(60), 
@@ -71,6 +66,14 @@
                 },
 
             });
+            if (dateInput) {
+                var event = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                dateInput.dispatchEvent(event);
+            }
         });
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -79,13 +82,13 @@
 
             if (flatpickrCalendar) {
                 flatpickrCalendar.classList.add('open');
-                flatpickrCalendar.classList.add('arrowTop');
-                flatpickrCalendar.classList.add('arrowLeft');
-                console.log("class");
-                flatpickrCalendar.style.top = '450.8px';
-                flatpickrCalendar.style.left = '386.05px';
-                flatpickrCalendar.style.right = 'auto';
-                console.log("style");
+                // flatpickrCalendar.classList.add('arrowTop');
+                // flatpickrCalendar.classList.add('arrowLeft');
+                // console.log("class");
+                // flatpickrCalendar.style.top = '450.8px';
+                // flatpickrCalendar.style.left = '386.05px';
+                // flatpickrCalendar.style.right = 'auto';
+                // console.log("style");
                 if (flatpickrCalendars.length > 0) {
                     var lastFlatpickrCalendar = flatpickrCalendars[flatpickrCalendars.length - 1];
                     lastFlatpickrCalendar.remove();
@@ -146,7 +149,27 @@
             return null;
         }
 
+        var btnMenu = document.querySelector(".navbar-toggler");
+        btnMenu.addEventListener("click", function(){
+            var dateInput = document.getElementById("id_date");
+            // var flatpickrCalendar = document.querySelector('.flatpickr-calendar');
+            if (dateInput) {
+                setTimeout(function() {
+                    var event = new MouseEvent('click', {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window
+                    });
+                    dateInput.dispatchEvent(event);
+                }, 300); // Задержка в миллисекундах
+            }
+            // if( flatpickrCalendar.style.top === '606.4px'){
+            //     flatpickrCalendar.style.top = '446.4px';
+            // }else{
+            //     flatpickrCalendar.style.top = '606.4px';
+            // }
+        })
+
       </script>
-      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
 {% endblock %}

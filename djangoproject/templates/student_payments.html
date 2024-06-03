@@ -63,7 +63,7 @@
         var leftPrice = '{{total_payment}}';
         console.log(leftPrice);
 
-        var totalPaymentPercent = parseInt((parseFloat(leftPrice)*100)/parseFloat(fullPrice));
+        var totalPaymentPercent = 100 - parseInt((parseFloat(leftPrice)*100)/parseFloat(fullPrice));
         console.log(totalPaymentPercent)
 
         var circle = document.querySelector('.progress');

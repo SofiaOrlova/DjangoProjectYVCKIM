@@ -20,6 +20,12 @@ header{
     text-align: center;
 }
 
+.contacts{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 100px;
+}
+
 .nav-link{
     color: var(--bs-primary-text-emphasis);
 }
@@ -37,10 +43,14 @@ header{
 }
 
 .nav{
-    position: relative;
-    display: flex;
+    /* position: relative;
+    display: flex; */
     border-bottom: 1.5px solid rgb(206 206 206);
-    padding: 15px 0;
+    padding: 10px 0;
+}
+
+.navbar>.container, .navbar>.container-fluid, .navbar>.container-lg, .navbar>.container-md, .navbar>.container-sm, .navbar>.container-xl, .navbar>.container-xxl{
+    justify-content: end;
 }
 
 .nav-item:not(:last-child){
@@ -50,7 +60,7 @@ header{
 
 .nav-item:last-child{
     margin-left: auto;
-}
+} 
 
 .menu{
     display: flex;
@@ -393,6 +403,7 @@ header{
 
 .toast:not(.showing):not(.show) {
     opacity: 100;
+    display: block;
 }
 
 .name-profile{
@@ -486,6 +497,9 @@ header{
 }
 
 .list-users{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    margin-bottom: 25px;
     list-style-type: none;
     margin-top: 15px;
     padding: 0;
@@ -498,6 +512,105 @@ header{
     padding: 0 20px;
 }
 
-/* .date-calendar-teacher{
-    grid-template-rows: repeat(2,1fr);
-} */
+@media (max-width: 1200px){
+    .contacts{
+        gap: 20px;
+    }
+}
+
+@media (max-width: 991px){
+    .instructor-cards{
+        grid-template-columns: repeat(1, 1fr);
+        gap: 15px;
+    }
+    .contacts{
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .nav-link{
+        padding: 0 0;
+    }
+    .nav-item:last-child{
+        margin-left: 0;
+    }
+    .nav-exit{
+        padding-left: 25px;
+    } 
+}
+
+@media (max-width: 767px){
+    .header-els{
+        font-size: 14px;
+    }
+    .item-menu{
+        margin: 0 15px;
+    }
+    .fc-scrollgrid-sync-table{
+        display: none;
+    }
+    #fc-dom-1{
+        font-size: 22px;
+    }
+    .fc-toolbar-chunk{
+        font-size: 16px;
+    }
+    .fc-timegrid{
+        height: 650px;
+    }
+    .fc-timegrid-slot,.fc-timegrid-slot-lane,.fc-timegrid-slot-minor{
+        height: 60px !important;
+    }
+    .fc-event-title{
+        text-align: start;
+    }
+    .fc-v-event, .fc-event-title{
+        max-height: 110% !important;
+    }
+    .fc-v-event{
+        background-color: #cfe2ff5c;
+        border: #cfe2ff;
+    }
+    .fc-event-main{
+        color: #0F001A !important;
+    } 
+    .fc-event-time{
+        font-weight: 500;
+    }
+
+}
+
+@media (max-width: 575px){
+    .instructor-cards{
+        gap: 5px;
+    }
+    .text-menu{
+        margin-bottom: 0;
+    }
+    .logo{
+        max-width: 120px;
+    }
+    .instructor-card{
+        padding: 15px;
+    }
+    .navbar-toggler{
+        margin-right:15px;
+    }
+    .img-instr{
+        width: 100px;
+        height: 100px;
+    }
+    .text-card{
+        font-size: 18px;
+    }
+    .navbar-nav{
+        margin-left: 10px;
+    }
+    .d-flex{
+        margin-right: 10px;
+    }
+}
+@media (max-width: 393px){
+    .text-menu{
+        display: none;
+    }
+}

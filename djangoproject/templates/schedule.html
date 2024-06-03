@@ -29,7 +29,7 @@
 
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridWeek',
+          initialView: window.innerWidth <= 767 ? 'timeGridDay' : 'dayGridWeek',
           locale: 'ru',
           firstDay: '1',
           buttonText: {
@@ -39,6 +39,14 @@
             hour: '2-digit',
             minute: '2-digit',
             hour12: false
+          },
+          views: {
+            timeGridDay: {
+                duration: { days: 3 }, // Отображение на 3 дня
+                buttonText: '3 дня',
+                slotMinTime: '08:00:00', // Минимальное время начала слота
+                slotMaxTime: '19:00:00'
+            }
           },
           events: appointments.map(function(appointment) {
                 var startTime = appointment.date + 'T' + appointment.time;
@@ -58,6 +66,14 @@
             btn.addEventListener('click', event =>{
                 applyCustomStyles();
             });
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 767) {
+                calendar.changeView('timeGridDay');
+            } else {
+                calendar.changeView('dayGridWeek');
+            }
         });
         
       });
