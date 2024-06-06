@@ -101,10 +101,6 @@ class AppointmentForm(forms.ModelForm):
             'time': forms.TextInput(),  
         }
 
-# class UserDataForm(forms.ModelForm):
-#     class Meta:
-#         model = UserData
-#         fields = ['passport_series', 'passport_number', 'registration', 'group_number', 'date_of_birth']
         
 class UserDataForm(forms.ModelForm):
     class Meta:
@@ -131,5 +127,4 @@ class UserPaymentsForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserPaymentsForm, self).__init__(*args, **kwargs)
         if 'instance' not in kwargs:
-            # Если форма не связана с существующим объектом, установите текущую дату как дефолтное значение
             self.initial['payment_date'] = timezone.now().date()

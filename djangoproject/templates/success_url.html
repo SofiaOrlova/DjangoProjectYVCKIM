@@ -4,8 +4,8 @@
     <div class="container">
         <div class="note-title"> {{user.first_name}} {{user.last_name}}, Вы записаны</div>
         <div class="note">
-            <div class="note-item"><span class="label-note">Инструктор:</span> {{appointments.instructor.second_name}} {{appointments.instructor.name}} {{appointments.instructor.surname}}</div>
-            <div class="note-item"><span class="label-note">Время вождения:</span> <span class="time">{{appointments.time}}</span></div>
+            <div class="note-item"><span class="label-note">Инструктор:</span> <span class="label-note-name">{{appointments.instructor.second_name}} {{appointments.instructor.name}} {{appointments.instructor.surname}}</span></div>
+            <div class="note-item"><span class="label-note">Время вождения:</span> <span class="label-note-time">{{appointments.time}}</span></div>
             <div class="note-item"><span class="label-note">Дата:</span> {{appointments.date}}</div>
         </div>
     </div>

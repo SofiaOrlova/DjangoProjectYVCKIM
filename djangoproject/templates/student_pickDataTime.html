@@ -6,8 +6,6 @@
         <div>
             <h4 class="title-client title-pick">Выбранный инструктор</h4>
             <div id="instructor-name"></div>
-
-    
         </div>
 
         <form method="post" id="appointment-form">
@@ -24,7 +22,6 @@
                 </div>
         
                 <div id="time-buttons" class="time-buttons-student">
-                    <!-- кнопки для времени -->
                 </div>
                 
                 <input type="submit" value="Записаться" class="btn btn-primary">
@@ -38,9 +35,7 @@
     </div>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>  
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var dateInput = document.getElementById("id_date");
@@ -52,6 +47,7 @@
                         return date.getDay() === 0;
                     }
                 ],
+                position: "below",
                 dateFormat: "Y-m-d", 
                 locale: {
                     firstDayOfWeek: 1,
@@ -82,21 +78,12 @@
 
             if (flatpickrCalendar) {
                 flatpickrCalendar.classList.add('open');
-                // flatpickrCalendar.classList.add('arrowTop');
-                // flatpickrCalendar.classList.add('arrowLeft');
-                // console.log("class");
-                // flatpickrCalendar.style.top = '450.8px';
-                // flatpickrCalendar.style.left = '386.05px';
-                // flatpickrCalendar.style.right = 'auto';
-                // console.log("style");
                 if (flatpickrCalendars.length > 0) {
                     var lastFlatpickrCalendar = flatpickrCalendars[flatpickrCalendars.length - 1];
                     lastFlatpickrCalendar.remove();
                 }
             }
         });
-
-
 
         var instructor_name = extractInstructorIdFromURL();
         if(instructor_name == 1){
@@ -152,7 +139,6 @@
         var btnMenu = document.querySelector(".navbar-toggler");
         btnMenu.addEventListener("click", function(){
             var dateInput = document.getElementById("id_date");
-            // var flatpickrCalendar = document.querySelector('.flatpickr-calendar');
             if (dateInput) {
                 setTimeout(function() {
                     var event = new MouseEvent('click', {
@@ -161,14 +147,11 @@
                         view: window
                     });
                     dateInput.dispatchEvent(event);
-                }, 300); // Задержка в миллисекундах
+                }, 300); 
             }
-            // if( flatpickrCalendar.style.top === '606.4px'){
-            //     flatpickrCalendar.style.top = '446.4px';
-            // }else{
-            //     flatpickrCalendar.style.top = '606.4px';
-            // }
         })
+
+        
 
       </script>
 

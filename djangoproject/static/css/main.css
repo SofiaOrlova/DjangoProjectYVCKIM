@@ -459,6 +459,10 @@ header{
     border-radius: 20px;
 }
 
+.note-item{
+    width: max-content;
+}
+
 /* __________________   teacher_dashboard css ______________________ */
 #deleteEventBtn{
     margin-right: 25px;
@@ -536,14 +540,8 @@ header{
     .nav-exit{
         padding-left: 25px;
     } 
-}
-
-@media (max-width: 767px){
-    .header-els{
-        font-size: 14px;
-    }
-    .item-menu{
-        margin: 0 15px;
+    .note{
+        width: 100%;
     }
     .fc-scrollgrid-sync-table{
         display: none;
@@ -576,6 +574,40 @@ header{
     .fc-event-time{
         font-weight: 500;
     }
+    .toasts {
+        display: block;
+    }
+    .d-flex{
+        margin-right: 10px;
+        justify-content: end;
+    }
+    .btn-grp {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px){
+    .header-els{
+        font-size: 14px;
+    }
+    .item-menu{
+        margin: 0 15px;
+    }
+    .label-note-name{
+        display: block;
+    }
+    .table-pay{
+        display: block;
+    }
+    .frame {
+        display: block;
+    }
+    .pay-info{
+        margin-bottom: 15px;
+    }
+    .list-users{
+        grid-template-columns: 1fr 1fr;
+    }
 
 }
 
@@ -605,8 +637,28 @@ header{
     .navbar-nav{
         margin-left: 10px;
     }
-    .d-flex{
+    #time-buttons{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 20px;
+        text-align: center;
+    }
+    .time-block:last-child {
         margin-right: 10px;
+    }
+    .note {
+        padding: 40px 30px;
+    }
+    .label-note-time{
+        display: block;
+    }
+    .fc .fc-toolbar {
+        display: block;
+    }
+    .fc-toolbar-chunk:last-child{
+        display: flex;
+        justify-content: end;
+        margin-top: 10px;
     }
 }
 @media (max-width: 393px){

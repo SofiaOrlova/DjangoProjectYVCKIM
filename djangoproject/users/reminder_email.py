@@ -16,6 +16,5 @@ def send_reminder_emails():
                 f'Завтра, {appointment.date}, в {appointment.time} у вас запланировано занятие с инструктором {appointment.instructor}.',
                 'orlowa.sony@ya.ru',
                 ['son020802@mail.ru'],
-                # [appointment.student.email],
                 fail_silently=False,
             )

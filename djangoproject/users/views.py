@@ -81,7 +81,6 @@ class EmailVerify(View):
 
 
 class Register(View):
-
     template_name = 'registration/register.html'
 
     def get(self, request):
@@ -94,16 +93,12 @@ class Register(View):
         form = UserCreationForm(request.POST)
 
         if form.is_valid():
-            # try:
             form.save()
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password1')
             user = authenticate(email=email, password=password)
-            # UserGroups.objects.create(user_id=user, group_id='2')
             send_email_for_verify(request, user)
             return redirect('confirm_email')
-            # except IntegrityError:
-            #     form.add_error('username', 'Такой пользователь уже существует.')
         else:
             print(form.errors)
 
@@ -155,9 +150,7 @@ def student_pickDataTime(request):
 
 def indexInstructor(request, idInstructor):
     item = Instructor.objects.get(id=idInstructor)
-    
     return redirect('appointment', idInstructor=idInstructor)
-
 
 available_times = [
     time(8, 0),
@@ -201,8 +194,6 @@ def appointment(request, idInstructor):
         form.fields['time'] = forms.ChoiceField(choices=time_choices)
 
     return render(request, 'student_pickDataTime.html', {'form': form})
-
-
 
 def get_available_times(request):
     selected_date = request.GET.get("date")
@@ -378,13 +369,10 @@ def confirm_users(request):
     response_data = {'reload_page': True}
     return JsonResponse(response_data)
 
-
-
 def manager_add_users_data(request):
     group = Group.objects.get(id=2)
     users = User.objects.filter(email_verify=True, groups=group).order_by('last_name')
     return render(request, 'manager_add_users_data.html', {'users': users})
-
 
 def add_user_data(request, user_id):
     user = User.objects.get(id=user_id)
@@ -614,16 +602,13 @@ def generate_group_journal(request):
 
 
 def manager_document_dogovor(request):
-    # users = User.objects.filter(email_verify=1) & User.objects.filter(Group.objects.get(id=2))
     group = Group.objects.get(id=2)
     users = User.objects.filter(email_verify=True, groups=group).order_by('last_name')
     return render(request, 'manager_document_dogovor.html', {'users': users})
 
 def generate_docx(user):
     doc = Document('dogovor_ob_obych_В.docx')
-
     user_data = user.userdata
-
     context = {
                 'region': user_data.region if user_data.region else '',
                 'city_or_village': user_data.city_or_village if user_data.city_or_village else '',
@@ -677,7 +662,6 @@ def generate_docx(user):
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
-    
     return buffer
 
 def user_dogovor(request, user_id):
@@ -688,7 +672,7 @@ def user_dogovor(request, user_id):
     
     response = HttpResponse(docx_buffer.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     new_filename = "договор_об_обучении_В_" + user.last_name +".docx"
-    # response['Content-Disposition'] = 'attachment; filename="document.docx"'
+
     response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
     
     return response
@@ -750,15 +734,10 @@ def generate_hour_group(request):
                                 row_table2 = doc.tables[1].rows[i+1].cells
                                 row_table2[j-20].text = appointment_day[j-2] + '.' + date 
                                 set_font(row_table2[j-20])
-                            
-
-
 
                 row_table2 = doc.tables[1].rows[i+1].cells  
                 row_table2[1].text = context['last_name'] + ' '+ context['first_name'][0] + '. ' + context['surname'][0] + '. '
 
-
-            
             output_path = "накопительная_ведомость.docx"
             doc.save(output_path)
 
@@ -767,7 +746,6 @@ def generate_hour_group(request):
                 new_filename = "накопительная_ведомость№"+group_number+".docx"
                 response['Content-Disposition'] = 'attachment; filename*=UTF-8\'\'' + quote(new_filename)
                 return response
-                
         else:
             return HttpResponse("Пользователи с указанной группой не найдены")
 
@@ -850,8 +828,6 @@ def kniga_vojden_users(request):
                                             text_element.text = text_element.text.replace("{{date}}", str(day) + '.0' + str(month))
                                         else:
                                             text_element.text = text_element.text.replace("{{date}}", appointment_dates[0])
-                                            # set_font(row[j])
-                                        # text_element.text = text_element.text.replace("{{date}}", appointment_dates[0])
                                         appointment_dates = appointment_dates[1:]
                                         
         
@@ -899,9 +875,6 @@ def instructor_lessons(request):
         appointments_count_dict = {entry['date']: entry['count'] for entry in appointments}
         num_days_in_month = calendar.monthrange(datetime.now().year, int(month_number))[1]
 
-        print(month_number)
-        print(instructor)
-
         template_path = "Табель учета рабочего времени мастера ПОВА.docx"
         doc = Document(template_path)
 
@@ -932,16 +905,11 @@ def instructor_lessons(request):
                     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
         
         for i in range(num_days_in_month):
-                # row[1].text = instructor.second_name
                 date_for_current_day = datetime(datetime.now().year, int(month_number), i+1).date()
                 count_for_current_day = appointments_count_dict.get(date_for_current_day, 0)
                 row = doc.tables[0].rows[i+3].cells
                 row[1].text = str(count_for_current_day)
-                # row[2].text = str(count_for_current_day)
-                print(date_for_current_day)
-                print(count_for_current_day)
 
-        
         output_path = "Отчет " + instructor.second_name + ".docx"
         doc.save(output_path)
 

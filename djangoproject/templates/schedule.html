@@ -8,12 +8,9 @@
 
         <div id='calendar'></div>
     </div>
-
-
     
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script>
-
       document.addEventListener('DOMContentLoaded', function() {
         var user_id = parseInt("{{ user_id }}");
         var appointments_json = '{{ appointments_json|escapejs }}';
@@ -29,7 +26,7 @@
 
         var calendarEl = document.getElementById('calendar');
         var calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: window.innerWidth <= 767 ? 'timeGridDay' : 'dayGridWeek',
+          initialView: window.innerWidth <= 991 ? 'timeGridDay' : 'dayGridWeek',
           locale: 'ru',
           firstDay: '1',
           buttonText: {
@@ -42,9 +39,9 @@
           },
           views: {
             timeGridDay: {
-                duration: { days: 3 }, // Отображение на 3 дня
+                duration: { days: 3 }, 
                 buttonText: '3 дня',
-                slotMinTime: '08:00:00', // Минимальное время начала слота
+                slotMinTime: '08:00:00',
                 slotMaxTime: '19:00:00'
             }
           },
@@ -69,7 +66,7 @@
         });
 
         window.addEventListener('resize', function() {
-            if (window.innerWidth <= 767) {
+            if (window.innerWidth <= 991) {
                 calendar.changeView('timeGridDay');
             } else {
                 calendar.changeView('dayGridWeek');
@@ -104,7 +101,6 @@
                 element.textContent = originalTime + '-' + newTime;
           });
       }
-
         function padNumber(number) {
             return number < 10 ? '0' + number : number;
         }
