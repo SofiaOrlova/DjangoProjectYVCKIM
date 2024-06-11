@@ -149,3 +149,4 @@ EMAIL_ADMIN = EMAIL_HOST_USER
 
 BACKGROUND_TASK_RUN_ASYNC = True
 
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'lk.yvc-kim.ru']
