@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-9^27o#5a$8o@wlk!6(%x2k%02fesh-goxb-tjl!&7jbh*n70vy'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -149,3 +149,5 @@ EMAIL_ADMIN = EMAIL_HOST_USER
 
 BACKGROUND_TASK_RUN_ASYNC = True
 
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'lk.yvc-kim.ru']
+CSRF_TRUSTED_ORIGINS=["https://lk.yvc-kim.ru"]
